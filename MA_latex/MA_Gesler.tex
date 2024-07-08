@@ -1,0 +1,212 @@
+\documentclass[bachelor,german]{hgbthesis}
+% Zulässige Class Options: 
+%   Typ der Arbeit: diplom, master (default), bachelor, praktikum 
+%   Hauptsprache: german (default), english
+%%------------------------------------------------------------
+
+
+
+
+%------------------------------------------------------------------------
+% meine Packages
+%------------------------------------------------------------------------
+
+%\usepackage{arsclassica} % Modifies the Classic Thesis package
+
+%\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+
+%\usepackage[utf8]{inputenc} % Required for including letters with accents
+
+%\usepackage{graphicx} % Required for including images
+
+%\usepackage{enumitem} % Required for manipulating the whitespace between and within lists
+
+%\usepackage{subfig} % Required for creating figures with multiple parts (subfigures)
+
+%\usepackage{amsmath,amssymb,amsthm} % For including math equations, theorems, symbols, etc
+
+%\usepackage{varioref} % More descriptive referencing
+
+%\usepackage[german]{babel}
+
+%\usepackage{epsfig}
+
+%\usepackage{amsmath,amssymb, amsthm, a4, verbatim} % for algin
+
+%\usepackage{subfigure}
+\usepackage{framed}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing}
+\usepackage{chngcntr}
+\counterwithout{footnote}{chapter}
+
+\usepackage{mathrsfs}
+%\usepackage{MnSymbol}
+
+%\usepackage[options ]{algorithm2e}
+\usepackage{algorithm}
+%\usepackage[noend]{algpseudocode}
+
+%\usepackage{pgfplots}
+%\usepackage{calligra}
+\usepackage{amsthm }
+\usepackage[all,cmtip]{xy}
+%  Headings and Footings 
+%\usepackage{chngcntr}
+%\usepackage{setspace}
+%\usepackage{hyperref}
+%\usepackage[figure]{hypcap}
+%\usepackage{extarrows}
+%\usepackage{wrapfig}
+%\usepackage{endnotes}
+
+\usepackage[
+%showframe,% Seitenlayout anzeigen
+left=3cm,
+right=3cm,
+top=3cm,
+bottom=2.5cm,
+%includeheadfoot
+]{geometry}
+
+%----------------------------------------------------------------------------------------------------------
+\usepackage{xspace}
+\newcommand{\MATLAB}{\textsc{Matlab}\xspace}
+
+\usepackage{listings}
+\usepackage[framed,mlscaleinline=true]{matlab-prettifier}
+
+\lstMakeShortInline[style=Matlab-editor]@
+\lstnewenvironment{matlab}{\lstset{
+		style=Matlab-editor,
+		basicstyle=\color{black}\ttfamily\tiny
+}}{}
+%----------------------------------------------------------------------------------------------------------
+
+
+\usepackage{extarrows}
+\usepackage{subfig}
+%\graphicspath{ {images/} }
+
+%------------------------------------------------------------------------
+% meine Packages
+%------------------------------------------------------------------------
+
+\newtheorem{theorem}{Satz}
+\newtheorem{lemma}{Lemma}
+\newtheorem{Definition}{Definition}
+\newtheorem{Bemerkung}{Bemerkung}
+
+\newcommand{\uproman}[1]{\uppercase\expandafter{\romannumeral#1}}
+\newcommand{\lowroman}[1]{\romannumeral#1\relax}
+
+\newcommand{\captionstring}[1]{\noexpand\noexpand\noexpand\string\string#1}
+
+%\newcommand{\C}{ \mathbb{C} }
+
+\graphicspath{{images/}}    % wo liegen die Bilder? 
+\bibliography{literatur}  	% Angabe der BibTeX-Datei, % utf8-change
+
+%%%----------------------------------------------------------
+\begin{document}
+%%%----------------------------------------------------------
+\frontmatter % römische Zahlen für Seitennummern
+\thispagestyle{empty}
+\begin{centering}
+	
+	\includegraphics[width=.5\linewidth]{bht_logos/BHT_Logo_kompakt_horizontal_Anthrazit_transparent}\\
+	\vspace*{60pt}
+	Fachbereich VI \ \ Informatik und Medien\\
+	\vspace*{30pt}
+	\textbf{Masterarbeit}\\
+	\vspace*{40pt}
+	von\\
+	\vspace*{20pt}
+	Radmir Gesler\\
+	\vspace*{30pt}
+	Zur Erlangung \\
+	des akademischen Grades\\
+	Master of Engineering (M.Eng.)\\
+	\vspace*{40pt}
+	Im Studiengang\\
+	Technische Informatik
+	
+\end{centering}
+\vspace*{40pt}
+Thema: 
+\begin{center}
+	Lösung zwei dimensionaler Wärmeleitungsgleichung mit PINN
+\end{center}
+
+\vspace*{40pt}
+\begin{tabular}{l l  p{4pt}}
+	Betreuer: & Prof. Dr. Frank Haußer  \\
+	Betreuer/in extern: & ---\\
+	Gutachter: & ---  \\
+	\\
+	Eingereicht am: & 20. August 2019 \\
+\end{tabular}
+
+%\strictlicense  % erzeugt restriktive Lizenzformel
+
+%%%----------------------------------------------------------
+
+
+
+
+%%%----------------------------------------------------------
+
+\include{Zusammenfassung}	
+\tableofcontents	% ggfs. weglassen
+%\include{kurzfassung}		
+%\include{abstract}			
+
+%%%----------------------------------------------------------
+\mainmatter         % Hauptteil (ab hier arab. Seitenzahlen)
+%%%----------------------------------------------------------
+
+%\include{1_Einleitung}
+
+\include{captures/01}
+
+%\include{captures/3_Inverse_Probleme}
+
+%\include{captures/4_Rekonstruktionsverfahren}
+
+%\include{captures/ausblick}
+
+%\include{radonTrafo}
+
+%\include{diplomschrift}
+%\include{latex}
+%\include{abbildungen}
+%\include{mathematik}
+%\include{literatur}
+%\include{drucken}
+%\include{schluss}
+
+%%%----------------------------------------------------------
+%%%Anhang
+\appendix
+\include{captures/anhang_a}	% Technische Ergänzungen
+\include{captures/anhang_b}	% Inhalt der CD-ROM/DVD
+%\include{anhang_c}	% Chronologische Liste der Änderungen
+%\include{anhang_d}	% Quelltext dieses Dokuments
+
+%%%----------------------------------------------------------
+\MakeBibliography
+
+\listoffigures % Print the list of figures
+
+%\listoftables % Print the list of tables
+
+%%%----------------------------------------------------------
+
+%%%Messbox zur Druckkontrolle
+%\include{messbox}
+
+\end{document}

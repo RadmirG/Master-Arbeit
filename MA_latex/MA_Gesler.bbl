@@ -1,0 +1,206 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{Burg91}{book}{}
+      \name{author}{3}{}{%
+        {{hash=3da41183d5d08bc3fc0fcb44fc5aa845}{%
+           family={Burg},
+           familyi={B\bibinitperiod},
+           given={Klemens},
+           giveni={K\bibinitperiod}}}%
+        {{hash=39c7630fa86a970bd3d7eb52bb38af68}{%
+           family={Haf},
+           familyi={H\bibinitperiod},
+           given={Herbert},
+           giveni={H\bibinitperiod}}}%
+        {{hash=eca6b610171f534faabd7b8b37500ae7}{%
+           family={Wille},
+           familyi={W\bibinitperiod},
+           given={Friedrich},
+           giveni={F\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Teubner}%
+      }
+      \strng{namehash}{08aa39ad075f1a8abac9a3f7b90fbf8e}
+      \strng{fullhash}{08aa39ad075f1a8abac9a3f7b90fbf8e}
+      \strng{bibnamehash}{08aa39ad075f1a8abac9a3f7b90fbf8e}
+      \strng{authorbibnamehash}{08aa39ad075f1a8abac9a3f7b90fbf8e}
+      \strng{authornamehash}{08aa39ad075f1a8abac9a3f7b90fbf8e}
+      \strng{authorfullhash}{08aa39ad075f1a8abac9a3f7b90fbf8e}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{1}
+      \field{langid}{Deutsch}
+      \field{title}{Funktionalanalysis und partielle Differentialgleichungen}
+      \field{year}{1991}
+    \endentry
+    \entry{Buzug04}{book}{}
+      \name{author}{1}{}{%
+        {{hash=e53c4b67fcebce78258f1cf930b9075c}{%
+           family={Buzug},
+           familyi={B\bibinitperiod},
+           given={Thorsten\bibnamedelima M.},
+           giveni={T\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{e53c4b67fcebce78258f1cf930b9075c}
+      \strng{fullhash}{e53c4b67fcebce78258f1cf930b9075c}
+      \strng{bibnamehash}{e53c4b67fcebce78258f1cf930b9075c}
+      \strng{authorbibnamehash}{e53c4b67fcebce78258f1cf930b9075c}
+      \strng{authornamehash}{e53c4b67fcebce78258f1cf930b9075c}
+      \strng{authorfullhash}{e53c4b67fcebce78258f1cf930b9075c}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{1}
+      \field{langid}{Deutsch}
+      \field{title}{Einführung in die Computertomographie}
+      \field{year}{2004}
+    \endentry
+    \entry{Hansen}{online}{}
+      \name{author}{3}{}{%
+        {{hash=f7cf8286cb9c038743a3eec9708f00d5}{%
+           family={Hansen},
+           familyi={H\bibinitperiod},
+           given={Per\bibnamedelima Christian},
+           giveni={P\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=2a9b5571207847376c2b3b08287c52c7}{%
+           family={Jorgensen},
+           familyi={J\bibinitperiod},
+           given={Jakob\bibnamedelima Sauer},
+           giveni={J\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=d25f61efd81c0ae7edd7ec252bccb2d2}{%
+           family={Saxild-Hansen},
+           familyi={S\bibinithyphendelim H\bibinitperiod},
+           given={Maria},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{398cc479af160f1c9924bec7351af955}
+      \strng{fullhash}{398cc479af160f1c9924bec7351af955}
+      \strng{bibnamehash}{398cc479af160f1c9924bec7351af955}
+      \strng{authorbibnamehash}{398cc479af160f1c9924bec7351af955}
+      \strng{authornamehash}{398cc479af160f1c9924bec7351af955}
+      \strng{authorfullhash}{398cc479af160f1c9924bec7351af955}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{A MATLAB Package of Algebraic Iterative Reconstruction Methods, AIR Tools II, Version 1.0}
+      \field{urlday}{19}
+      \field{urlmonth}{6}
+      \field{urlyear}{2019}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb http://people.compute.dtu.dk/pcha/AIRtoolsII/index.html
+      \endverb
+      \verb{url}
+      \verb http://people.compute.dtu.dk/pcha/AIRtoolsII/index.html
+      \endverb
+      \keyw{onlineexample2}
+    \endentry
+    \entry{Heuser75}{book}{}
+      \name{author}{1}{}{%
+        {{hash=9c762f9df81d25b96502aedfdf66177a}{%
+           family={Heuser},
+           familyi={H\bibinitperiod},
+           given={Harro},
+           giveni={H\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {B.G Teubner Stutgart}%
+      }
+      \strng{namehash}{9c762f9df81d25b96502aedfdf66177a}
+      \strng{fullhash}{9c762f9df81d25b96502aedfdf66177a}
+      \strng{bibnamehash}{9c762f9df81d25b96502aedfdf66177a}
+      \strng{authorbibnamehash}{9c762f9df81d25b96502aedfdf66177a}
+      \strng{authornamehash}{9c762f9df81d25b96502aedfdf66177a}
+      \strng{authorfullhash}{9c762f9df81d25b96502aedfdf66177a}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{1}
+      \field{langid}{Deutsch}
+      \field{title}{Funktionalanalysis}
+      \field{year}{1975}
+    \endentry
+    \entry{Rieder03}{book}{}
+      \name{author}{1}{}{%
+        {{hash=cab9e3b108b97eadbddb58d1b524c4da}{%
+           family={Rieder},
+           familyi={R\bibinitperiod},
+           given={Andres},
+           giveni={A\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Vieweg}%
+      }
+      \strng{namehash}{cab9e3b108b97eadbddb58d1b524c4da}
+      \strng{fullhash}{cab9e3b108b97eadbddb58d1b524c4da}
+      \strng{bibnamehash}{cab9e3b108b97eadbddb58d1b524c4da}
+      \strng{authorbibnamehash}{cab9e3b108b97eadbddb58d1b524c4da}
+      \strng{authornamehash}{cab9e3b108b97eadbddb58d1b524c4da}
+      \strng{authorfullhash}{cab9e3b108b97eadbddb58d1b524c4da}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{1}
+      \field{langid}{Deutsch}
+      \field{title}{Keine Probleme mit inversen Problemen}
+      \field{year}{2003}
+    \endentry
+    \entry{Schweizer18}{book}{}
+      \name{author}{1}{}{%
+        {{hash=53e44f164849eb9269434dd2d399bff9}{%
+           family={Schweizer},
+           familyi={S\bibinitperiod},
+           given={Ben},
+           giveni={B\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Springer Spektrum}%
+      }
+      \strng{namehash}{53e44f164849eb9269434dd2d399bff9}
+      \strng{fullhash}{53e44f164849eb9269434dd2d399bff9}
+      \strng{bibnamehash}{53e44f164849eb9269434dd2d399bff9}
+      \strng{authorbibnamehash}{53e44f164849eb9269434dd2d399bff9}
+      \strng{authornamehash}{53e44f164849eb9269434dd2d399bff9}
+      \strng{authorfullhash}{53e44f164849eb9269434dd2d399bff9}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{2}
+      \field{langid}{Deutsch}
+      \field{title}{Partielle Differentialgleichungen}
+      \field{year}{2018}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
