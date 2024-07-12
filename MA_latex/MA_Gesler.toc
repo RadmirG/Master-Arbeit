@@ -1,17 +1,20 @@
 \babel@toc {ngerman}{}\relax 
 \contentsline {chapter}{\numberline {1}Einführung}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Kurze Zusammenfassung}{1}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}Wärmeleitung}{1}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Wärmekonvektion}{1}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}Wärmestrahlung}{1}{subsection.1.1.3}%
 \contentsline {section}{\numberline {1.2}Wärmeleitungsgleichung}{1}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Physics Informed Neural Network}{1}{section.1.3}%
+\contentsline {section}{\numberline {1.3}Physics Informed Neural Network}{2}{section.1.3}%
 \contentsline {section}{\numberline {1.4}Das Prinzip des Computertomographen}{2}{section.1.4}%
-\contentsline {section}{\numberline {1.5}Die Radon Transformation}{4}{section.1.5}%
-\contentsline {subsection}{\numberline {1.5.1}Kleiner Einschub über $L^2$-Raum}{7}{subsection.1.5.1}%
-\contentsline {subsection}{\numberline {1.5.2}Eigenschaften der Radon Transformation}{9}{subsection.1.5.2}%
+\contentsline {section}{\numberline {1.5}Die Radon Transformation}{5}{section.1.5}%
+\contentsline {subsection}{\numberline {1.5.1}Kleiner Einschub über $L^2$-Raum}{8}{subsection.1.5.1}%
+\contentsline {subsection}{\numberline {1.5.2}Eigenschaften der Radon Transformation}{10}{subsection.1.5.2}%
 \contentsline {subsubsection}{\nonumberline Linearität von $\mathcal {R}$}{10}{subsubsection*.10}%
 \contentsline {subsubsection}{\nonumberline Stetigkeit von $\mathcal {R}$}{10}{subsubsection*.12}%
-\contentsline {subsubsection}{\nonumberline Adjungierter Operator $\mathcal {R}$}{11}{subsubsection*.14}%
+\contentsline {subsubsection}{\nonumberline Adjungierter Operator $\mathcal {R}$}{12}{subsubsection*.14}%
 \contentsline {subsubsection}{\nonumberline Kompaktheit von $\mathcal {R}$}{13}{subsubsection*.17}%
-\contentsline {subsubsection}{\nonumberline Die Singulärwertzerlegung (SWZ) von $\mathcal {R}$}{14}{subsubsection*.19}%
+\contentsline {subsubsection}{\nonumberline Die Singulärwertzerlegung (SWZ) von $\mathcal {R}$}{15}{subsubsection*.19}%
 \contentsline {chapter}{\numberline {A}Implementierung}{16}{appendix.A}%
 \contentsline {section}{\numberline {A.1}Radon Transformation}{16}{section.A.1}%
 \contentsline {section}{\numberline {A.2}Ungefilterte Rückprojektion}{17}{section.A.2}%

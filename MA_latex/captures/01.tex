@@ -3,6 +3,22 @@
 
 \section{Kurze Zusammenfassung}
 
+Im Folgendem werden zuerst die Begrifflichkeiten der Wärmeausbreitung geklärt. Im Anschluss wird die Wärmegleichung aufgestellt. \\
+
+Aus den Beobachtungen der Natur hat man festgestellt, dass die Natur es immer anstrebt die Temperaturunterschiede auszugleichen. Dabei entsteht ein Wärmestrom vom Wärmeren zu Kälterem. Solch eine Übertragung der Wärme kann auf drei arten stattfinden, also die Wärmeleitung, Wärmekonvektion und Wärmestrahlung.
+
+\subsection{Wärmeleitung}
+
+...
+
+\subsection{Wärmekonvektion}
+
+...
+
+\subsection{Wärmestrahlung}
+
+...
+
 \section{Wärmeleitungsgleichung}
 
 Im Allgemeinen beschreibt die Wärmegleichung die Ausbreitung der Wärme in einem Medium. Das Medium kann beispielsweise ein räumlicher Gegenstand sein, zum Beispiel eine rechteckige Metallplatte. Man stelle sich vor, die gegebene Platte wird in der Mitte kurz erhitzt. Diesen Prozess kann man mithilfe einer Wärmebildkamera sichtbar machen.\\
@@ -18,8 +34,17 @@ Für die Herleitung der Gleichungen der Modellierung wird ein beliebiges Volumen
 
 \begin{eqnarray}
 	\int\limits_{\partial V} j \cdot dS = 0
+	\label{equa:1.1}
 \end{eqnarray}
 
+An dieser Stelle benötigen wie den \textit{Gauß'schen Satz} um das Oberflächenintegral \ref{equa:1.1} in ein Volumenintegral umzuschreiben.
+
+\begin{Definition}
+	Der Gauß'sche Satz
+	\begin{equation}
+		\int\limits_{V} <\nabla,F> dV = \int\limits_{\partial V} <F,n> dS
+	\end{equation}
+\end{Definition}
 
 
 \section{Physics Informed Neural Network}
@@ -301,7 +326,7 @@ Die blau gestrichelte Linie in Abbildung \ref{fig:1.5} stelle einen Röntgenstra
 \end{center}
 \begin{equation}
 	I(L_0 + \Delta L) - I(L_0) = - \alpha I(L_0).
-	\label{equa:1.1}
+	\label{equa:1.100}
 \end{equation}
 Der Proportionalitätsfaktor $\alpha$ ist durch das Produkt der Dichteverteilung entlang des Strahls, also $f(L)$ und seiner zurückgelegten Strecke $\parallel \Delta L\parallel$ gegeben. Hier wird angenommen, dass $f(L)$ die Eigenschaften des Materials in sich trägt. Insgesamt ergibt sich
 \begin{equation}

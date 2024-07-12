@@ -1,12 +1,12 @@
 \babel@toc {ngerman}{}\relax 
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {1.1}{\ignorespaces Schematischer Aufbau einer Röntgenaufnahme im Draufsicht. Links ist das Schwächungsprofil nach Durchgang der Röntgenstrahlen durch ein Medium mit verschiedenen Dichten zu sehen (mit der Annahme, dass orangene Kreise höhere Dichte haben, als die graue Fläche).}}{2}{figure.caption.3}%
-\contentsline {figure}{\numberline {1.2}{\ignorespaces Das Prinzip der Bildrekonstruktion aus CT-Daten mit einer Rückprojektion~(a) und zwei Rückprojektionen~(b).}}{3}{figure.caption.4}%
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Schematischer Aufbau einer Röntgenaufnahme im Draufsicht. Links ist das Schwächungsprofil nach Durchgang der Röntgenstrahlen durch ein Medium mit verschiedenen Dichten zu sehen (mit der Annahme, dass orangene Kreise höhere Dichte haben, als die graue Fläche).}}{3}{figure.caption.3}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces Das Prinzip der Bildrekonstruktion aus CT-Daten mit einer Rückprojektion~(a) und zwei Rückprojektionen~(b).}}{4}{figure.caption.4}%
 \contentsline {figure}{\numberline {1.3}{\ignorespaces Prinzipieller Aufbau eines CT-Scanners der dritten Generation.}}{4}{figure.caption.5}%
-\contentsline {figure}{\numberline {1.4}{\ignorespaces Das Schichtmodell eines Objekts als Grundlage zur dreidimensionalen Rekonstruktion.}}{4}{figure.caption.6}%
-\contentsline {figure}{\numberline {1.5}{\ignorespaces Intensitätsänderung der Röntgenstrahlung beim Passieren eines homogenen Objekts.}}{5}{figure.caption.7}%
-\contentsline {figure}{\numberline {1.6}{\ignorespaces Parametrisierung des Strahls $L$ auf dem Gebiet $\Omega $. }}{6}{figure.caption.8}%
-\contentsline {figure}{\numberline {1.7}{\ignorespaces Ein Beispiel der Rückprojektion eines Projektionswerts $g_{\theta }(s_0)$ auf einen Punkt $x \in \Omega $. Mit $g_{\theta }(s)$ ist hier eine Projektion bei einem festen Winkel $\theta $ bezeichnet, also $g_{\theta }(s) = g(s,\theta )$.}}{12}{figure.caption.15}%
+\contentsline {figure}{\numberline {1.4}{\ignorespaces Das Schichtmodell eines Objekts als Grundlage zur dreidimensionalen Rekonstruktion.}}{5}{figure.caption.6}%
+\contentsline {figure}{\numberline {1.5}{\ignorespaces Intensitätsänderung der Röntgenstrahlung beim Passieren eines homogenen Objekts.}}{6}{figure.caption.7}%
+\contentsline {figure}{\numberline {1.6}{\ignorespaces Parametrisierung des Strahls $L$ auf dem Gebiet $\Omega $. }}{7}{figure.caption.8}%
+\contentsline {figure}{\numberline {1.7}{\ignorespaces Ein Beispiel der Rückprojektion eines Projektionswerts $g_{\theta }(s_0)$ auf einen Punkt $x \in \Omega $. Mit $g_{\theta }(s)$ ist hier eine Projektion bei einem festen Winkel $\theta $ bezeichnet, also $g_{\theta }(s) = g(s,\theta )$.}}{13}{figure.caption.15}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
