@@ -174,32 +174,6 @@
       \field{title}{Keine Probleme mit inversen Problemen}
       \field{year}{2003}
     \endentry
-    \entry{Schweizer18}{book}{}
-      \name{author}{1}{}{%
-        {{hash=53e44f164849eb9269434dd2d399bff9}{%
-           family={Schweizer},
-           familyi={S\bibinitperiod},
-           given={Ben},
-           giveni={B\bibinitperiod}}}%
-      }
-      \list{publisher}{1}{%
-        {Springer Spektrum}%
-      }
-      \strng{namehash}{53e44f164849eb9269434dd2d399bff9}
-      \strng{fullhash}{53e44f164849eb9269434dd2d399bff9}
-      \strng{bibnamehash}{53e44f164849eb9269434dd2d399bff9}
-      \strng{authorbibnamehash}{53e44f164849eb9269434dd2d399bff9}
-      \strng{authornamehash}{53e44f164849eb9269434dd2d399bff9}
-      \strng{authorfullhash}{53e44f164849eb9269434dd2d399bff9}
-      \field{sortinit}{S}
-      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{edition}{2}
-      \field{langid}{Deutsch}
-      \field{title}{Partielle Differentialgleichungen}
-      \field{year}{2018}
-    \endentry
   \enddatalist
 \endrefsection
 \endinput

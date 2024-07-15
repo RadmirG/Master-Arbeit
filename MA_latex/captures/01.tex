@@ -1,25 +1,31 @@
 \chapter{Einführung}
 \label{cha:1}
 
-\section{Kurze Zusammenfassung}
+\section{Kurze Zusammenfassung über Wärmeübertragung}
 
-Im Folgendem werden zuerst die Begrifflichkeiten der Wärmeausbreitung geklärt. Im Anschluss wird die Wärmegleichung aufgestellt. \\
-
-Aus den Beobachtungen der Natur hat man festgestellt, dass die Natur es immer anstrebt die Temperaturunterschiede auszugleichen. Dabei entsteht ein Wärmestrom vom Wärmeren zu Kälterem. Solch eine Übertragung der Wärme kann auf drei arten stattfinden, also die Wärmeleitung, Wärmekonvektion und Wärmestrahlung.
+Die Beobachtung der Naturvorgänge, die mit dem Transport der Wärme zu tun haben, hat zu einer Feststellung geführt. Und zwar, falls ein Medium zwei Gebiete mit unterschiedlichen Temperaturen besitzt, bewegt sich die Wärme immer aus dem Gebiet mit der höheren Temperatur in das, wo eine niedrigere Temperatur herrscht. Dieser Vorgang der Wärmeübertragung kann auf drei Arten geschehen, durch sogenannte Wärmeleitung, durch Wärmekonvektion und durch Wärmestrahlung. Im folgendem wollen wir diese Begrifflichkeiten zuerst klären.
 
 \subsection{Wärmeleitung}
 
-...
+Man stelle sich vor, wie ein Metallstab an einem Ende aufgeheizt wird. Nach einiger Zeit würde man an dem anderem Ende eine Temperaturerhöhung messen können. Im Umkehrschluss hieße es, dass die Wärme von dem Stabende, wo eine Wärmequelle angelegt wurde, zu dem anderem gewandert ist. Eine physikalische Erklärung dafür könnte so lauten, die Atome, wo eine Wärmequelle angelegt ist, fangen an stärker zu schwingen, also bekommen mehr Energie. Durch die Gitterstruktur im Metall regen die schon stärker schwingende Atome ihre Nachbarn an und so weiter, bis die Atome an dem anderem Ende auch stärker schwingen. Somit wird die Wärmeenergie in Form schwingender Atome durch einen Festkörper transportiert, in solchen Fällen spricht man von \textit{Wärmeleitung}.
 
 \subsection{Wärmekonvektion}
 
-...
+Bei der \textit{Konvektion} handelt es sich um Transport der Stoffmengen. Dieser Prozess findet in festen, flüssigen und gasförmigen Materialzuständen statt. Zum Beispiel bei Flüssigkeiten und Gasen tritt eine Ausgleichsströmung durch den Dichteunterschied zwischen warmen und kühleren Gebieten auf. In solchen Fällen sind die wärmeren Gebiete spezifisch leichter und steigen in die Höhe, wo sie sich dann abkühlen. Der beschriebene Verlauf ist ein Fall für sogenannte \textit{freie Konvektion}. Eine \textit{erzwungene Konvektion} liegt dann vor, wenn eine äußere Einwirkung dem System hinzugefügt wird. Hierfür könnte eine Vulkaneruption als Beispiel dienen. 
 
 \subsection{Wärmestrahlung}
 
-...
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth]{em_spektrum}
+	\caption{Das Spektrum der elektromagnetischen Strahlung. Quelle: \href{https://de.wikipedia.org/wiki/Elektromagnetisches_Spektrum}{Wikipedia}.}
+	\label{fig:1.1.3_1}
+\end{figure}
 
-\section{Wärmeleitungsgleichung}
+Im Vakuum, da wo keine Materie vorhanden ist, kann die Wärmeübertragung weder durch Wärmeleitung noch durch Konvektion stattfinden. Nehmen wir ein Beispiel der Wärmeübertragung von der Sonne zur Erde an. Trotzt der Tatsache, dass der Raum zwischen der Erde und Sonne (fast) leer von Materie ist, findet die Wärmeübertragung von der Sonne auf die Erde statt. Es ist die \textit{Wärmestrahlung }, die für die Energieübertragung sorgt. Im Allgemeinen werden solche Prozesse durch das Konzept der elektromagnetischen Strahlung erklärt. Fakt ist, dass die elektromagnetische Strahlung kein Medium braucht um sich im Raum auszubreiten. Strahlung an sich kann mittels Wellen mathematisch beschrieben werden. Wellen schwingen, alles was schwingt hat eine Frequenz und kann daher in einem Frequenzspektrum eingeordnet werden. So ist die Wärmestrahlung nur ein Teil des gesamten elektromagnetischen Spektrums, wobei die UV-Strahlung, das sichtbare Spektrum und die Infrarot-Strahlung die Wärmestrahlung ausmachen (Abb.\ref{fig:1.1.3_1}). Tritt die Wärmestrahlung auf Materie, so wird sie absorbiert, wodurch sich die Materie aufwärmt oder gar erhitzt.
+
+
+\section{Herleitung der Wärmeleitungsgleichung}
 
 Im Allgemeinen beschreibt die Wärmegleichung die Ausbreitung der Wärme in einem Medium. Das Medium kann beispielsweise ein räumlicher Gegenstand sein, zum Beispiel eine rechteckige Metallplatte. Man stelle sich vor, die gegebene Platte wird in der Mitte kurz erhitzt. Diesen Prozess kann man mithilfe einer Wärmebildkamera sichtbar machen.\\
 
@@ -28,23 +34,75 @@ Würde man diese Situation über einen Zeitraum beobachten, so würde man festst
 Der beschriebene Prozess kann mithilfe sogenannter Wärmeleitungsgleichung modelliert werden, die wir zunächst herleiten möchten.
 
 \subsubsection*{Wärmeausbreitung}
-Sei $\Omega \subset \R^{3}$ das Gebiet auf dem die Verteilung der Temperatur bestimmt werden soll.\footnote{\label{foot:1.1.1} Im Allgemeinen gilt $\Omega \subset \R^n$.} Die gesuchte Temperaturverteilung auf $\Omega$ bezeichnen wir mit $u$. Es ist eine Abbildung, die jeden Punkt $x \in \Omega$ nach $\R$ abbildet, also $u:\Omega \longrightarrow \R$. Eine weitere, in diesem Kontext nützliche Abbildung, ist der Wärmefluss $j$. Für jeden Punkt $x \in \Omega$ gibt der Wärmefluss die Richtung in der die Wärmeenergie transportiert wird an, somit $j:\Omega \longrightarrow \R^3$. Damit sind nötigen \textit{Variablen} für die Modellierung festgelegt.\\
+Sei $\Omega \subset \R^{3}$ das Gebiet auf dem die Verteilung der Temperatur bestimmt werden soll.\footnote{\label{foot:1.1.1} Im Allgemeinen gilt $\Omega \subset \R^n$.} Die gesuchte Temperaturverteilung auf $\Omega$ bezeichnen wir mit $u$. $u$ ordnet jedem Punkt $x \in \Omega$ eine Zahl $u(x) \in \R$ zu, also $u:\Omega \longrightarrow \R$. Zusätzlich wollen wir die Bewegung der Wärme in $\Omega$ auffassen, es ist der Wärmefluss $j$. Für jeden Punkt $x \in \Omega$ gibt der Wärmefluss die Richtung in der die Wärmeenergie transportiert wird an, somit $j:\Omega \longrightarrow \R^3$. Damit sind nötigen \textit{Variablen} für die Modellierung festgelegt.\\
 
-Für die Herleitung der Gleichungen der Modellierung wird ein beliebiges Volumen $V \subset \Omega$ betrachtet. Wir betrachten zuerst den homogenen Fall, also es gibt keine Wärmequellen, die in das Volumen $V$ die Wärmeenergie hinein oder heraus transportieren. Somit ist der Wärmefluss am Rand $\partial V$, wie folgt gegeben
+Für die Herleitung der Gleichungen der Modellierung wird ein beliebiges Volumen $V \subset \Omega$ betrachtet. In einem homogenen Fall, also es gibt keine Wärmequellen, die in das Volumen $V$ die Wärmeenergie hinein oder heraus transportieren, würde man keinen Wärmestrom am Rand $dV$ detektieren, es gilt also
 
 \begin{eqnarray}
-	\int\limits_{\partial V} j \cdot dS = 0
-	\label{equa:1.1}
+	\int\limits_{\partial V} \langle j, v \rangle dS = 0.
+	\label{equa:1.2_1}
 \end{eqnarray}
 
-An dieser Stelle benötigen wie den \textit{Gauß'schen Satz} um das Oberflächenintegral \ref{equa:1.1} in ein Volumenintegral umzuschreiben.
+Mit der Gleichung \ref{equa:1.2_1} wird der Strom $j$ in Richtung jeder Normalen $v$ an Rand $dV$ von $V$ aufsummiert (Abb.\ref{fig:1.2_1}). Und mit der Annahme, dass es keine Quellen gibt, erwarten wir eine 0 Summe.
+
+%----------------------------------------------------------------------------------------
+%	Beginn der Grafik
+%----------------------------------------------------------------------------------------
+\begin{figure}[!h]
+	\centering
+	\begin{tikzpicture}
+		
+		
+		\fill[lightgray] (0,0) ellipse (1.6cm and 1.2cm);	
+		\draw[orange] (0,0) ellipse (1.6cm and 1.2cm);
+		\draw[black](1, -0.7) node [left] {$V$};
+		
+		\draw [rotate=-30, xshift=-0.6cm, yshift=0.5cm, ->] [black] (0,-2) -- (0,1); % j
+		\draw [rotate=-30, xshift=-0.3cm, yshift=0.5cm, ->] [black] (0,-2) -- (0,1); % j
+		\draw [rotate=-30, xshift=0cm, yshift=0.5cm, ->] [black] (0,-2) -- (0,1); % j
+		\draw [black] (0.6, 1.7)  node {$j$};	
+		
+		\draw [rotate=-45, xshift=0.5cm, yshift=1.41cm, ->] [black] (0,0) -- (0,0.5); % v
+		\draw [black] (1.7,0.8)  node {$v$};	
+		\draw [rotate=45, xshift=1.41cm, yshift=-0.6cm, ->] [blue] (0,0) -- (0,0.5); % dS
+		\draw [blue] (1.2, 1.1)  node {$dS$};
+
+		\draw [gray] (-1.2, 1.1)  node {$dV$};
+						
+		\fill[nearly transparent] (-2,-2) rectangle (2, 2); // Omega
+		\draw[gray](-1.3, -1.3) node [left] {$\Omega$};
+		
+	\end{tikzpicture}	
+	\caption{Schematische Darstellung der Gleichung \ref{equa:1.2_1}, mit $V$ das Volumen eine Mediums, $dV$ Rand (orange) von $V$, $j$ Der Wärmestrom durch $V$, $v \in \R^3$ Normalenvektor an $dV$ und $dS$ Tangente an $dV$.}
+	\label{fig:1.2_1}
+\end{figure}
+%----------------------------------------------------------------------------------------
+%	Ende der Grafik
+%----------------------------------------------------------------------------------------
+
+An dieser Stelle benötigen wie den \textit{Gauß'schen Satz} um das Oberflächenintegral \ref{equa:1.2_1} in ein Volumenintegral umzuschreiben.
 
 \begin{Definition}
-	Der Gauß'sche Satz
+	\textbf{Der Gauß'sche Satz} \\
+	Sei $V \subset	\R^n$ eine kompakte Menge mit abschnittsweise glattem Rand $S = dV$, der Rand ist orientiert durch äußeres Normaleneinheitsvektorfeld $n$. Das Vektorfeld $F$ sei stetig differenzierbar auf eine offenen Menge $\Omega$ mit $V \in \Omega$. Dann gilt
 	\begin{equation}
-		\int\limits_{V} <\nabla,F> dV = \int\limits_{\partial V} <F,n> dS
+		\int\limits_{V} \langle \nabla,F \rangle dV = \int\limits_{\partial V} \langle F,n \rangle
+		 dS.
 	\end{equation}
 \end{Definition}
+
+\paragraph{Temporäres DenkZettel}
+
+\begin{itemize}
+	\item[] \begin{Definition}
+		Kompakte Menge \\
+		
+	\end{Definition}
+		\item[] \begin{Definition}
+		Glatter Rand
+	\end{Definition}
+	
+\end{itemize}
 
 
 \section{Physics Informed Neural Network}
@@ -92,7 +150,7 @@ Die CT ist ein bildgebendes Verfahren, das in der medizinischen Radiologie und i
 	
 	\end{tikzpicture}
 	\caption{Schematischer Aufbau einer Röntgenaufnahme im Draufsicht. Links ist das Schwächungsprofil nach Durchgang der Röntgenstrahlen durch ein Medium mit verschiedenen Dichten zu sehen (mit der Annahme, dass orangene Kreise höhere Dichte haben, als die graue Fläche).}
-	\label{fig:1.1}
+	\label{fig:1.100}
 \end{figure}
 %----------------------------------------------------------------------------------------
 %	Ende der Grafik
