@@ -1,4 +1,0 @@
-/tmp/tmpcp3ckdui/dolfin_expression_d2097a7aa33ae9868eeca813c428f65b.cpp: In member function ‘virtual void dolfin::dolfin_expression_d2097a7aa33ae9868eeca813c428f65b::eval(Eigen::Ref<Eigen::Matrix<double, -1, 1> >, Eigen::Ref<const Eigen::Matrix<double, -1, 1> >) const’:
-/tmp/tmpcp3ckdui/dolfin_expression_d2097a7aa33ae9868eeca813c428f65b.cpp:64:31: error: ‘U’ was not declared in this scope
-           values[0] = 1 - u*u*U;
-                               ^
