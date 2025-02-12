@@ -14,9 +14,9 @@
 #
 #     4. Time discretization with backward Euler or Crank-Nicolson for time derivatives.
 #
-#     5. Solve in FEniCS .
+#     5. Solve in FEniCS (on Windows take a look to A_Dockerfile).
 # ======================================================================================================================
-# Radmir Gesler, 2024, master thesis at BHT Berlin by Prof. Dr. Frank Haußer
+# Radmir Gesler, 2024, master thesis at BHT Berlin by Prof.Dr.Frank Haußer
 # ======================================================================================================================
 
 from fenics import *
@@ -44,7 +44,7 @@ u_n = interpolate(Constant(0.0), V)
 # Inner parameter
 a = Expression("1 + u*u", u=u_n, degree=2)  # Example: a(u) = 1 + u^2
 # Heat source
-f = Expression("sin(pi*x[0])*sin(pi*x[1])*exp(-t)", t=0.0, degree=2)  # Example: f(x, y, t)
+f = Expression("sin(pi*x[0])*sin(pi*x[1])*exp(-t)", t=0.0, degree=2)  # Example: f(x,y,t)
 
 # Define trial and test functions
 u = TrialFunction(V)

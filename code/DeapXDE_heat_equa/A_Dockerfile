@@ -14,7 +14,8 @@ FROM quay.io/fenicsproject/stable:current
 WORKDIR /app
 
 # Copy the Python file into the container
-COPY forward_heat_equa_2D.py /app/
+COPY FEniCS_forward_heat_equa_1D.py /app/
+COPY FEniCS_forward_heat_equa_2D.py /app/
 
 # Update pip to the latest version
 RUN pip3 install --no-cache-dir --upgrade pip
