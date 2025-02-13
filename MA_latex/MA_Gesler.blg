@@ -1,15 +1,15 @@
 [0] Config.pm:307> INFO - This is Biber 2.19
 [0] Config.pm:310> INFO - Logfile is 'MA_Gesler.blg'
-[217] biber-MSWIN64:340> INFO - === 
-[272] Biber.pm:419> INFO - Reading 'MA_Gesler.bcf'
-[425] Biber.pm:979> INFO - Found 5 citekeys in bib section 0
-[450] Biber.pm:4419> INFO - Processing section 0
-[466] Biber.pm:4610> INFO - Looking for bibtex file 'literatur.bib' for section 0
-[526] bibtex.pm:1713> INFO - LaTeX decoding ...
-[554] bibtex.pm:1519> INFO - Found BibTeX data source 'literatur.bib'
-[646] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'variable = shifted' with 'variable = non-ignorable'
-[646] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[646] Biber.pm:4239> INFO - Sorting list 'nty/global//global/global' of type 'entry' with template 'nty' and locale 'de-DE'
-[646] Biber.pm:4245> INFO - No sort tailoring available for locale 'de-DE'
-[659] bbl.pm:660> INFO - Writing 'MA_Gesler.bbl' with encoding 'UTF-8'
-[662] bbl.pm:763> INFO - Output to MA_Gesler.bbl
+[184] biber-MSWIN64:340> INFO - === 
+[238] Biber.pm:419> INFO - Reading 'MA_Gesler.bcf'
+[434] Biber.pm:979> INFO - Found 7 citekeys in bib section 0
+[458] Biber.pm:4419> INFO - Processing section 0
+[476] Biber.pm:4610> INFO - Looking for bibtex file 'literatur.bib' for section 0
+[554] bibtex.pm:1713> INFO - LaTeX decoding ...
+[584] bibtex.pm:1519> INFO - Found BibTeX data source 'literatur.bib'
+[668] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[668] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'variable = shifted' with 'variable = non-ignorable'
+[668] Biber.pm:4239> INFO - Sorting list 'nty/global//global/global' of type 'entry' with template 'nty' and locale 'de-DE'
+[668] Biber.pm:4245> INFO - No sort tailoring available for locale 'de-DE'
+[684] bbl.pm:660> INFO - Writing 'MA_Gesler.bbl' with encoding 'UTF-8'
+[689] bbl.pm:763> INFO - Output to MA_Gesler.bbl

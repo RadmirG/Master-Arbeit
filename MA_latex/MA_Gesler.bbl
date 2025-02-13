@@ -81,6 +81,31 @@
       \field{title}{Einführung in die Computertomographie}
       \field{year}{2004}
     \endentry
+    \entry{Handrock-Meyer88}{book}{}
+      \name{author}{1}{}{%
+        {{hash=24f34940374ae9cf9e2e05d50b69cee4}{%
+           family={Handrock-Meyer},
+           familyi={H\bibinithyphendelim M\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Zeitschrift für Analysis und ihre Anwendungen, S. 503-510}%
+      }
+      \strng{namehash}{24f34940374ae9cf9e2e05d50b69cee4}
+      \strng{fullhash}{24f34940374ae9cf9e2e05d50b69cee4}
+      \strng{bibnamehash}{24f34940374ae9cf9e2e05d50b69cee4}
+      \strng{authorbibnamehash}{24f34940374ae9cf9e2e05d50b69cee4}
+      \strng{authornamehash}{24f34940374ae9cf9e2e05d50b69cee4}
+      \strng{authorfullhash}{24f34940374ae9cf9e2e05d50b69cee4}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{Deutsch}
+      \field{title}{Inverse Probleme für die Wärmeleitungsgleichung}
+      \field{year}{1988}
+    \endentry
     \entry{Hansen}{online}{}
       \name{author}{3}{}{%
         {{hash=f7cf8286cb9c038743a3eec9708f00d5}{%
@@ -173,6 +198,32 @@
       \field{langid}{Deutsch}
       \field{title}{Keine Probleme mit inversen Problemen}
       \field{year}{2003}
+    \endentry
+    \entry{Schweizer18}{book}{}
+      \name{author}{1}{}{%
+        {{hash=53e44f164849eb9269434dd2d399bff9}{%
+           family={Schweizer},
+           familyi={S\bibinitperiod},
+           given={Ben},
+           giveni={B\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Springer Spektrum}%
+      }
+      \strng{namehash}{53e44f164849eb9269434dd2d399bff9}
+      \strng{fullhash}{53e44f164849eb9269434dd2d399bff9}
+      \strng{bibnamehash}{53e44f164849eb9269434dd2d399bff9}
+      \strng{authorbibnamehash}{53e44f164849eb9269434dd2d399bff9}
+      \strng{authornamehash}{53e44f164849eb9269434dd2d399bff9}
+      \strng{authorfullhash}{53e44f164849eb9269434dd2d399bff9}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{2}
+      \field{langid}{Deutsch}
+      \field{title}{Partielle Differentialgleichungen}
+      \field{year}{2018}
     \endentry
   \enddatalist
 \endrefsection
