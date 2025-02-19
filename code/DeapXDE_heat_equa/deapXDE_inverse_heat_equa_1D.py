@@ -20,180 +20,281 @@
 # Radmir Gesler, 2024, master thesis at BHT Berlin by Prof. Dr. Frank Haußer
 # ======================================================================================================================
 
+import os
+# Disables oneDNN optimizations
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
 import deepxde as dde
+from deepxde.callbacks import Callback
 import tensorflow as tf
-import matplotlib.pyplot as plt
 import numpy as np
-
-
-import tensorflow.compat.v1 as tf
-
-tf.disable_v2_behavior()  # Ensure TensorFlow 1.x behavior
+import matplotlib.pyplot as plt
+import xml.etree.ElementTree as ET
+import tensorflow.keras.backend as K
+from scipy.interpolate import interp1d
+import glob
 
 
 # ======================================================================================================================
 # DEFINITION OF THE INVERSE PROBLEM AND DOMAIN
 # ======================================================================================================================
 
-# Define the spatial domain (x, y) ∈ [0, l] x [0, l] and time domain t ∈ [0, T]
-l = 1
-T = 1
-spatial_domain = dde.geometry.Rectangle([0, 0], [l, l])
-time_domain = dde.geometry.TimeDomain(0, T)
-domain = dde.geometry.GeometryXTime(spatial_domain, time_domain)
+# # Define the 1D spatial domain
+L = 1  # Length of the domain
+domain = dde.geometry.Interval(0, L)
 
-# Observed data u_obs(x, y, t), synthetic data
-# It can/should be experimental data
-def u_obs(x_in):
-    return (tf.cos(x_in[:, 2:] * np.pi * x_in[:, 0:1])
-            + tf.sin(x_in[:, 2:] * np.pi * x_in[:, 1:2])) # * tf.exp(-x_in[:, 2:])
+#-----------------------------------------------------------------------------------------------------------------------
+# Observed data for u(x, t)
+def u_obs(xml_file):
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    x_obs = np.array([float(x) for x in root.find("Point").text.split()]).reshape(-1, 1)
+    u_obs = np.array([float(u) for u in root.find("PointData").text.split()]).reshape(-1, 1)
+
+    # Randomly select `num_points` while keeping the distribution diverse
+    if len(x_obs) > 10:
+        # Evenly spaced selection
+        indices = np.linspace(0, len(x_obs) - 1, 10, dtype=int)
+        x_obs = x_obs[indices]
+        u_obs = u_obs[indices]
+
+    return x_obs, u_obs
+
+# Load observed data
+x_obs, u_obs_values = u_obs("u_1D.xml")
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Interpolate u(x)
+interp_func = interp1d(x_obs.flatten(), u_obs_values.flatten(), kind='cubic', fill_value="extrapolate")
+# Generate fine grid for smooth curve
+x_fine = np.linspace(min(x_obs), max(x_obs), 100)
+# Compute interpolated values
+u_interp = interp_func(x_fine)
 
 
-# Right side of heat PDE input
-# Dirac delta function (as an example)
-def dirac_delta(x_in):
-    return tf.exp(-((x_in[:, 0:1] - 0.5) ** 2 + (x_in[:, 1:2] - 0.5) ** 2) / 0.01)
+learned_values = {
+    "x": x_obs,
+    "a": np.random.random(size=x_obs.shape),
+    "f": np.random.random(size=x_obs.shape)
+}
 
+def f_source(x_in):
+    return 1 + 8*x_in
 
-# The heat equation residual for the inverse problem
+#-----------------------------------------------------------------------------------------------------------------------
+# Define the inverse problem loss
+@tf.autograph.experimental.do_not_convert
 def inverse_loss(x_in, outputs):
-    u = u_obs(x_in)  # Use the observed solution
-    print(outputs.shape)
-    a = outputs[:, 0:1]  # The output of the neural network for a(x, y)
-    u_x = dde.grad.jacobian(u, x_in, i=0, j=0)  # ∂u/∂x
-    u_y = dde.grad.jacobian(u, x_in, i=0, j=1)  # ∂u/∂y
-    u_t = dde.grad.jacobian(u, x_in, i=0, j=2)  # ∂u/∂t
-    flux_x = a * u_x
-    flux_y = a * u_y
-    flux_xx = dde.grad.jacobian(flux_x, x_in, i=0, j=0)
-    flux_yy = dde.grad.jacobian(flux_y, x_in, i=0, j=1)
-    f = dirac_delta(x_in)  # Dirac delta as the source term
-    return u_t - (flux_xx + flux_yy) - f
+    u = outputs[:, 0:1]  # Learned u(x)
+    a = outputs[:, 1:2]  # Learned a(x)
+    #f = outputs[:, 2:3]  # Learned f(x)
+    f = f_source(x_in)
 
+    # Save a(x) and f(x) at x_obs for later use
+    learned_values["x"] = x_in
+    learned_values["a"] = outputs[:, 1:2]
+    learned_values["f"] = outputs[:, 2:3]
+
+    u_t = 0  # ∂u/∂t
+    u_x = dde.grad.jacobian(u, x_in)  # ∂u/∂x
+    flux_x = a * u_x
+    flux_xx = dde.grad.jacobian(flux_x, x_in)  # ∂(a ∂u/∂x)/∂x
+
+    # Regularization term for a(x) and f(x)
+    a_x = dde.grad.jacobian(a, x_in)
+    f_x = dde.grad.jacobian(f, x_in)
+    reg_term = 0.01*(tf.reduce_mean(a_x ** 2) + tf.reduce_mean(f_x ** 2))
+
+    return u_t - flux_xx - f + reg_term # Residual of the PDE
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Define boundary conditions (Dirichlet & Neumann)
+def boundary_left(x, on_boundary):
+    return on_boundary and np.isclose(x[0], 0)
+
+def boundary_right(x, on_boundary):
+    return on_boundary and np.isclose(x[0], L)
+
+# Dirichlet BC: u(0) = 0, u(1) = 0
+bc1 = dde.icbc.DirichletBC(domain, lambda x: 0, boundary_left, component=0)
+bc2 = dde.icbc.DirichletBC(domain, lambda x: 0, boundary_right, component=0)
+
+# Neumann BC: u'(0) = 1, u'(1) = -1
+bc3 = dde.icbc.NeumannBC(domain, lambda x: 1, boundary_left, component=0)
+bc4 = dde.icbc.NeumannBC(domain, lambda x: -1, boundary_right, component=0)
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Incorporate observed data constraints
+u_bc = dde.icbc.PointSetBC(
+    x_obs,
+    u_obs_values,
+    component=0
+)
+
+class UpdateLearnedValuesCallback(Callback):
+    def on_epoch_end(self):
+        # Ensure values are updated at training points
+        global learned_values
+        #if learned_values["a"] is not None and learned_values["f"] is not None:
+        #    print("Updated learned values a(x) and f(x)")
+
+
+# Incorporate learned heat diffusivity a(x)
+a_bc = dde.icbc.PointSetBC(
+    learned_values["x"],
+    learned_values["a"],
+    component=1
+)
+
+# Incorporate learned heat source f(x)
+f_bc = dde.icbc.PointSetBC(
+    learned_values["x"],
+    learned_values["f"],
+    component=2
+)
 
 # ======================================================================================================================
 # TRAININGS PROCESS
 # ======================================================================================================================
 
-# Define a neural network to represent the unknown diffusivity a(x, y)
-net_a = dde.maps.FNN([3] + [50] * 3 + [1], "tanh", "Glorot uniform")  # Note: 3 inputs (x, y, t)
+# Define the neural network to infer a(x)
+pinn = dde.maps.FNN([1] + [50] * 3 + [3], "tanh", "Glorot uniform")
+# pinn = dde.maps.FNN([1] + [100] * 5 + [3], "tanh", "Glorot uniform")
 
-# Create the inverse problem data
-data = dde.data.TimePDE(
+
+# Create training data for PINN
+data = dde.data.PDE(
     domain,
-    inverse_loss,
-    [],
+    inverse_loss,   # Loss 0: PDE Residual
+    [u_bc,          # Loss 1: Observed Data
+     #a_bc,          # Loss 2: Heat diffusivity dependency
+     #f_bc,          # Loss 3: Heat source dependency
+     bc1,           # Loss 4: Dirichlet BC : u(0)  =  0
+     bc2],          # Loss 5: Dirichlet BC : u(L)  =  0
+     #bc3,           # Loss 6: Neumann BC   : u'(0) =  1
+     #bc4],          # Loss 7: Neumann BC   : u'(L) = -1
     num_domain=4000,
-    num_boundary=200,
+    num_boundary=2,
 )
 
-# Define the model for the inverse problem
-model = dde.Model(data, net_a)
-
-# Train the model to infer a(x,y)
-model.compile("adam", lr=1e-3)
-loss_history, train_state = model.train(epochs=10000)
+# Define and train the model
+model = dde.Model(data, pinn)
+loss_weights=[10, 20, 10, 10] #, 10] #, 5] #, 3, 3]
+model.compile("adam", lr=1e-5, loss_weights=loss_weights) # checkpoint_cb = dde.callbacks.ModelCheckpoint("checkpoints/model.keras", save_better_only=True)
+loss_history, train_state = model.train(iterations=10000, callbacks=[UpdateLearnedValuesCallback()]) #,checkpoint_cb])
+model.compile("L-BFGS-B", loss_weights=loss_weights)
+loss_history, train_state = model.train(iterations=5000, callbacks=[UpdateLearnedValuesCallback()])
 
 # ======================================================================================================================
-# PLOTS
+# FILTERING FOR BEST SAVED MODEL
 # ======================================================================================================================
 
-# Plot the inferred a(x,y)
-dde.saveplot(loss_history, train_state, issave=True, isplot=True)
+# Load the best checkpoint after training
+# ckpt = tf.train.get_checkpoint_state(".")  # Check current directory
+#
+# if ckpt and ckpt.model_checkpoint_path:
+#     best_checkpoint = ckpt.model_checkpoint_path
+#     print("Best checkpoint found:", best_checkpoint)
+# else:
+#     print("No checkpoint found.")
+#
+# model.restore(best_checkpoint)
+# Find and load the best checkpoint
+# # checkpoint_files = glob.glob("checkpoints/model.keras*")
+# #
+# # if checkpoint_files:
+# #     best_checkpoint = max(checkpoint_files, key=os.path.getctime)
+# #     print(f"Restoring best checkpoint: {best_checkpoint}")
+# #     model.restore(best_checkpoint)
+# # else:
+# #     print("No checkpoint found, training from scratch.")
 
-# Define a grid of points for plotting
-num_points = 100
-x = np.linspace(0, l, num_points)
-y = np.linspace(0, l, num_points)
-x_grid, y_grid = np.meshgrid(x, y)
-xy = np.hstack((x_grid.flatten()[:, None], y_grid.flatten()[:, None]))
+# # Get all checkpoint-related files
+# all_ckpt_files = (glob.glob("checkpoints/model.keras*"))
+# best_ckpt_prefix = best_checkpoint.split("\\")[-1]  # Extracts only the filename
+# # Delete all except the best ones
+# for file in all_ckpt_files:
+#     if not any(file.endswith(ext) and best_ckpt_prefix in file for ext in [".index", ".meta", ".data-00000-of-00001"]):
+#         os.remove(file)
+#         print(f"Deleted: {file}")
+# print("Cleanup complete! Only the best checkpoint is retained.")
 
-# Evaluate a(x,y) using the trained model
-xy_with_zeros = np.hstack((xy, np.zeros((xy.shape[0], 1))))  # Append time=0 for evaluation
-a_pred = model.predict(xy_with_zeros).reshape(num_points, num_points)
 
-# Plot a(x, y)
-plt.figure(figsize=(8, 6))
-plt.contourf(x_grid, y_grid, a_pred, levels=50, cmap="viridis")
-plt.colorbar(label="$a(x, y)$")
-plt.title("$a(x, y)$")
+# ======================================================================================================================
+# PREPARE PLOTS
+# ======================================================================================================================
+
+# Generate and plot the learned functions
+x_test = np.linspace(0, 1, 100).reshape(-1, 1)
+y_pred = model.predict(x_test)
+
+a_exact = 1 + x_test
+f_exact = 1 + 4*x_test
+
+
+# Plotting
+plt.figure(figsize=(12, 6))
+
+# Plot a(x)
+plt.subplot(2, 2, 1)
+plt.plot(x_test, a_exact, label=r"$a(x) = 1 + x$")
+plt.plot(x_test, y_pred[:, 1], label=r"$a_{l}(x)$ : learned", color='green')
+plt.title(r"Wärmeleitfähigkeit")
 plt.xlabel("x")
-plt.ylabel("y")
+plt.ylabel(r"$a(x)$")
+plt.grid()
+plt.legend()
+
+# Plot f(x)
+plt.subplot(2, 2, 2)
+plt.plot(x_test, f_exact, label=r"$f(x) = 1 + 4x$")
+plt.plot(x_test, y_pred[:, 2], label=r"$f_{l}(x)$ : learned", color='orange')
+plt.title(r"Source Term")
+plt.xlabel(r"$x$")
+plt.ylabel(r"$f(x)$")
+plt.grid()
+plt.legend()
+
+# Plot the final solution u(x) and u_exact
+plt.subplot(2, 1, 2)
+plt.plot(x_test, y_pred[:, 0], label=r"$u_{l}(x)$ : learned", color='green')
+plt.scatter(x_obs, u_obs_values, label="Observed u(x)", color='r', s=5)
+plt.plot(x_fine, u_interp, color='blue', linestyle='--', label="Interpolated Curve")
+plt.xlabel(r"$x$")
+plt.ylabel(r"$u(x)$")
+plt.grid()
+plt.legend()
+
+plt.tight_layout()
 plt.show()
 
-# Define time points for u(x, y, t) plotting
-times = [0.1, 0.5, 0.9]  # Example time points
+# ======================================================================================================================
+# LOSSES PLOT
+# ======================================================================================================================
+# dde.saveplot(loss_history, train_state, issave=True, isplot=True) # standard data loss plot, I guess
 
-# Plot u(x, y, t) for each time
-for t in times:
-    t_grid = np.full((xy.shape[0], 1), t)  # Create a NumPy array with the time value
-    input_array = np.hstack((xy, t_grid))  # Combine x, y, and t
-    input_tensor = tf.convert_to_tensor(input_array, dtype=tf.float32)  # Convert to TensorFlow tensor
+# Define loss labels based on the given loss indices
+loss_labels = [
+    "PDE Residual (inverse_loss)",
+    "Observed Data (ic_bc)",
+    #"Heat diffusivity dependency",
+    "Heat source dependency",
+    "Dirichlet BC : u(0) = 0",
+    "Dirichlet BC : u(1) = 0",
+    "Neumann BC (u'(0) = 1)",
+    "Neumann BC (u'(1) = -1)"
+]
 
-    # Evaluate Tensor within a session
-    with tf.Session() as sess:
-        u_tensor = u_obs(input_tensor)  # Calculate u(x, y, t) using TensorFlow operations
-        u_pred = sess.run(u_tensor).reshape(num_points, num_points)  # Evaluate and reshape
+# Convert loss_history.loss_train to a NumPy array for easier manipulation
+loss_array = np.array(loss_history.loss_train)  # Shape: (epochs, num_losses)
 
-    # Plot u(x, y, t)
-    plt.figure(figsize=(8, 6))
-    plt.contourf(x_grid, y_grid, u_pred, levels=50, cmap="plasma")
-    plt.colorbar(label="u(x, y, t)")
-    plt.title(f"Solution u(x, y, t) at t = {t}")
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.show()
+plt.figure(figsize=(8, 5))
+for i in range(loss_array.shape[1]):  # Iterate over loss components
+    plt.semilogy(loss_history.steps, loss_array[:, i], label=loss_labels[i])
 
-
-# # Define the time points for the animation (e.g., 100 time steps between 0 and 1)
-# times = np.linspace(0.0, 1.0, 100)  # 100 time points between 0 and 1
-#
-# # Define the mesh grid for x and y
-# num_points = 50  # Adjust this for the resolution of the plot
-# x = np.linspace(0, 1, num_points)  # Adjust num_points as needed
-# y = np.linspace(0, 1, num_points)
-# x_grid, y_grid = np.meshgrid(x, y)
-# xy = np.column_stack((x_grid.ravel(), y_grid.ravel()))  # Flatten the grid for evaluation
-#
-# # Set up formatting for the movie files (using 'avconv' writer)
-# Writer = animation.writers['avconv']  # Use AVConvWriter
-# writer = Writer(fps=15)
-#
-# # Set up the figure for the animation
-# fig, ax = plt.subplots(figsize=(8, 6))
-#
-# # Initialize the contour plot
-# c = ax.contourf(x_grid, y_grid, np.zeros_like(x_grid), levels=50, cmap="plasma")
-# plt.colorbar(c, ax=ax, label="u(x, y, t)")
-# ax.set_title('Solution u(x, y, t)')
-# ax.set_xlabel('x')
-# ax.set_ylabel('y')
-#
-#
-# # Function to update the plot for each frame (time step)
-# def update_plot(t):
-#     t_grid = np.full((xy.shape[0], 1), t)  # Create a NumPy array with the time value
-#     input_array = np.hstack((xy, t_grid))  # Combine x, y, and t
-#     input_tensor = tf.convert_to_tensor(input_array, dtype=tf.float32)  # Convert to TensorFlow tensor
-#
-#     # Evaluate Tensor within a session
-#     with tf.Session() as sess:
-#         u_tensor = u_obs(input_tensor)  # Calculate u(x, y, t) using TensorFlow operations
-#         u_pred = sess.run(u_tensor).reshape(num_points, num_points)  # Evaluate and reshape
-#
-#     # Remove old contours
-#     for collection in ax.collections:
-#         collection.remove()
-#
-#     # Create the new contour plot
-#     c = ax.contourf(x_grid, y_grid, u_pred, levels=50, cmap="plasma")
-#     return c.collections  # Return the contour collections to be animated
-#
-#
-# # Create the animation
-# ani = animation.FuncAnimation(fig, update_plot, frames=times, interval=100, blit=False)
-#
-# # Save the animation as an .avi video file
-# ani.save('solution_movie.avi', writer=writer)
-#
-# print("Movie creation complete!")
+plt.grid()
+plt.legend()
+plt.xlabel("Iterations")
+plt.ylabel("Loss (log scale)")
+plt.title("Training Loss")
+plt.show()
