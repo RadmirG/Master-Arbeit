@@ -30,9 +30,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
-import tensorflow.keras.backend as K
 from scipy.interpolate import interp1d
-import glob
 
 
 # ======================================================================================================================
@@ -87,8 +85,7 @@ def f_source(x_in):
 def inverse_loss(x_in, outputs):
     u = outputs[:, 0:1]  # Learned u(x)
     a = outputs[:, 1:2]  # Learned a(x)
-    #f = outputs[:, 2:3]  # Learned f(x)
-    f = f_source(x_in)
+    f = outputs[:, 2:3]  # Learned f(x)
 
     # Save a(x) and f(x) at x_obs for later use
     learned_values["x"] = x_in
@@ -100,12 +97,7 @@ def inverse_loss(x_in, outputs):
     flux_x = a * u_x
     flux_xx = dde.grad.jacobian(flux_x, x_in)  # ∂(a ∂u/∂x)/∂x
 
-    # Regularization term for a(x) and f(x)
-    a_x = dde.grad.jacobian(a, x_in)
-    f_x = dde.grad.jacobian(f, x_in)
-    reg_term = 0.01*(tf.reduce_mean(a_x ** 2) + tf.reduce_mean(f_x ** 2))
-
-    return u_t - flux_xx - f + reg_term # Residual of the PDE
+    return u_t - flux_xx - f # Residual of the PDE
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Define boundary conditions (Dirichlet & Neumann)
@@ -148,8 +140,8 @@ a_bc = dde.icbc.PointSetBC(
 
 # Incorporate learned heat source f(x)
 f_bc = dde.icbc.PointSetBC(
-    learned_values["x"],
-    learned_values["f"],
+    x_obs,
+    f_source(x_obs),
     component=2
 )
 
@@ -168,7 +160,7 @@ data = dde.data.PDE(
     inverse_loss,   # Loss 0: PDE Residual
     [u_bc,          # Loss 1: Observed Data
      #a_bc,          # Loss 2: Heat diffusivity dependency
-     #f_bc,          # Loss 3: Heat source dependency
+     f_bc,          # Loss 3: Heat source dependency
      bc1,           # Loss 4: Dirichlet BC : u(0)  =  0
      bc2],          # Loss 5: Dirichlet BC : u(L)  =  0
      #bc3,           # Loss 6: Neumann BC   : u'(0) =  1
@@ -179,7 +171,7 @@ data = dde.data.PDE(
 
 # Define and train the model
 model = dde.Model(data, pinn)
-loss_weights=[10, 20, 10, 10] #, 10] #, 5] #, 3, 3]
+loss_weights=[1, 2, 2, 0.5, 0.5] #, 0.5, 0.5]
 model.compile("adam", lr=1e-5, loss_weights=loss_weights) # checkpoint_cb = dde.callbacks.ModelCheckpoint("checkpoints/model.keras", save_better_only=True)
 loss_history, train_state = model.train(iterations=10000, callbacks=[UpdateLearnedValuesCallback()]) #,checkpoint_cb])
 model.compile("L-BFGS-B", loss_weights=loss_weights)
