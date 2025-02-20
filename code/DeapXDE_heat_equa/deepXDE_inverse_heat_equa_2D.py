@@ -92,7 +92,7 @@ model = dde.Model(data, net_a)
 
 # Train the model to infer a(x,y)
 model.compile("adam", lr=1e-3)
-loss_history, train_state = model.train(epochs=10000)
+loss_history, train_state = model.train(epochs=5000)
 
 # ======================================================================================================================
 # PLOTS
@@ -120,80 +120,35 @@ plt.title("$a(x, y)$")
 plt.xlabel("x")
 plt.ylabel("y")
 plt.show()
+# Create a figure and a 3D axis
+fig = plt.figure(figsize=(10, 7))
+ax = fig.add_subplot(111, projection='3d')
 
-# Define time points for u(x, y, t) plotting
-times = [0.1, 0.5, 0.9]  # Example time points
+# Plot surface
+ax.plot_surface(x_grid, y_grid, a_pred, cmap="viridis", edgecolor='none')
 
-# Plot u(x, y, t) for each time
-for t in times:
-    t_grid = np.full((xy.shape[0], 1), t)  # Create a NumPy array with the time value
-    input_array = np.hstack((xy, t_grid))  # Combine x, y, and t
-    input_tensor = tf.convert_to_tensor(input_array, dtype=tf.float32)  # Convert to TensorFlow tensor
+# Labels and title
+ax.set_title("$a(x, y)$ - Heat Diffusivity", fontsize=12)
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.set_zlabel("$a(x, y)$")
 
-    # Evaluate Tensor within a session
-    with tf.Session() as sess:
-        u_tensor = u_obs(input_tensor)  # Calculate u(x, y, t) using TensorFlow operations
-        u_pred = sess.run(u_tensor).reshape(num_points, num_points)  # Evaluate and reshape
-
-    # Plot u(x, y, t)
-    plt.figure(figsize=(8, 6))
-    plt.contourf(x_grid, y_grid, u_pred, levels=50, cmap="plasma")
-    plt.colorbar(label="u(x, y, t)")
-    plt.title(f"Solution u(x, y, t) at t = {t}")
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.show()
+# Show plot
+plt.show()
 
 
-# # Define the time points for the animation (e.g., 100 time steps between 0 and 1)
-# times = np.linspace(0.0, 1.0, 100)  # 100 time points between 0 and 1
-#
-# # Define the mesh grid for x and y
-# num_points = 50  # Adjust this for the resolution of the plot
-# x = np.linspace(0, 1, num_points)  # Adjust num_points as needed
-# y = np.linspace(0, 1, num_points)
-# x_grid, y_grid = np.meshgrid(x, y)
-# xy = np.column_stack((x_grid.ravel(), y_grid.ravel()))  # Flatten the grid for evaluation
-#
-# # Set up formatting for the movie files (using 'avconv' writer)
-# Writer = animation.writers['avconv']  # Use AVConvWriter
-# writer = Writer(fps=15)
-#
-# # Set up the figure for the animation
-# fig, ax = plt.subplots(figsize=(8, 6))
-#
-# # Initialize the contour plot
-# c = ax.contourf(x_grid, y_grid, np.zeros_like(x_grid), levels=50, cmap="plasma")
-# plt.colorbar(c, ax=ax, label="u(x, y, t)")
-# ax.set_title('Solution u(x, y, t)')
-# ax.set_xlabel('x')
-# ax.set_ylabel('y')
-#
-#
-# # Function to update the plot for each frame (time step)
-# def update_plot(t):
-#     t_grid = np.full((xy.shape[0], 1), t)  # Create a NumPy array with the time value
-#     input_array = np.hstack((xy, t_grid))  # Combine x, y, and t
-#     input_tensor = tf.convert_to_tensor(input_array, dtype=tf.float32)  # Convert to TensorFlow tensor
-#
-#     # Evaluate Tensor within a session
-#     with tf.Session() as sess:
-#         u_tensor = u_obs(input_tensor)  # Calculate u(x, y, t) using TensorFlow operations
-#         u_pred = sess.run(u_tensor).reshape(num_points, num_points)  # Evaluate and reshape
-#
-#     # Remove old contours
-#     for collection in ax.collections:
-#         collection.remove()
-#
-#     # Create the new contour plot
-#     c = ax.contourf(x_grid, y_grid, u_pred, levels=50, cmap="plasma")
-#     return c.collections  # Return the contour collections to be animated
-#
-#
-# # Create the animation
-# ani = animation.FuncAnimation(fig, update_plot, frames=times, interval=100, blit=False)
-#
-# # Save the animation as an .avi video file
-# ani.save('solution_movie.avi', writer=writer)
-#
-# print("Movie creation complete!")
+# Create a figure and a 3D axis
+fig = plt.figure(figsize=(10, 7))
+ax = fig.add_subplot(111, projection='3d')
+
+# Plot surface
+ax.plot_surface(x_grid, y_grid, a_pred, cmap="viridis", edgecolor='none')
+
+# Labels and title
+ax.set_title("$a(x, y)$ - Heat Diffusivity", fontsize=12)
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.set_zlabel("$a(x, y)$")
+
+# Show plot
+plt.show()
