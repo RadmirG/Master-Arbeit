@@ -1,2 +1,14 @@
 Code/DeapXDE_heat_equa/.idea
 Code/DeapXDE_heat_equa/.venv
+
+
+MA_latex/*.aux
+MA_latex/*.bcf
+MA_latex/*.log
+MA_latex/*.lot
+MA_latex/*.run.xml
+MA_latex/*.synctex.gz
+MA_latex/*.toc
+MA_latex/*.bbl
+MA_latex/*.out
+MA_latex/*.blg
