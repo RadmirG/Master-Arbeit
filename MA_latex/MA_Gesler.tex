@@ -87,7 +87,7 @@ bottom=2.5cm,
 }}{}
 %----------------------------------------------------------------------------------------------------------
 
-
+\usepackage{framed}
 \usepackage{extarrows}
 \usepackage{subfig}
 %\graphicspath{ {images/} }
@@ -111,102 +111,33 @@ bottom=2.5cm,
 \graphicspath{{images/}}    % wo liegen die Bilder? 
 \bibliography{literatur}  	% Angabe der BibTeX-Datei, % utf8-change
 
-%%%----------------------------------------------------------
+%============================================================
 \begin{document}
-%%%----------------------------------------------------------
-\frontmatter % römische Zahlen für Seitennummern
-\thispagestyle{empty}
-\begin{centering}
-	
-	\includegraphics[width=.5\linewidth]{bht_logos/BHT_Logo_kompakt_horizontal_Anthrazit_transparent}\\
-	\vspace*{60pt}
-	Fachbereich VI \ \ Informatik und Medien\\
-	\vspace*{30pt}
-	\textbf{Masterarbeit}\\
-	\vspace*{40pt}
-	von\\
-	\vspace*{20pt}
-	Radmir Gesler\\
-	\vspace*{30pt}
-	Zur Erlangung \\
-	des akademischen Grades\\
-	Master of Engineering (M.Eng.)\\
-	\vspace*{40pt}
-	Im Studiengang\\
-	Technische Informatik
-	
-\end{centering}
-\vspace*{40pt}
-Thema: 
-\begin{center}
-	Lösung zwei dimensionaler Wärmeleitungsgleichung mit PINN
-\end{center}
+	\frontmatter % römische Zahlen für Seitennummern
+		\thispagestyle{empty}
+		\include{captures/00_01_frontmatter}
+	%--------------------------------------------------------
+		\include{captures/00_Zusammenfassung}	
+		\tableofcontents	% Inhaltsverzeichnis	
+	%--------------------------------------------------------
+	\mainmatter % Hauptteil (ab hier arab. Seitenzahlen)
+		\include{captures/01_einfuehrung}
+		\include{captures/02_waermeleitungsproblem}
+		\include{captures/03_auswertung}
 
-\vspace*{40pt}
-\begin{tabular}{l l  p{4pt}}
-	Betreuer: & Prof. Dr. Frank Haußer  \\
-	Betreuer/in extern: & ---\\
-	Gutachter: & ---  \\
-	\\
-	Eingereicht am: & 20. August 2019 \\
-\end{tabular}
+		% Tämporer zum abschauen
+		\include{captures/BA}
+		\include{captures/Inverse_Probleme}
+		\include{captures/Rekonstruktionsverfahren}
 
-%\strictlicense  % erzeugt restriktive Lizenzformel
-
-%%%----------------------------------------------------------
-
-
-
-
-%%%----------------------------------------------------------
-
-\include{Zusammenfassung}	
-\tableofcontents	% ggfs. weglassen
-%\include{kurzfassung}		
-%\include{abstract}			
-
-%%%----------------------------------------------------------
-\mainmatter         % Hauptteil (ab hier arab. Seitenzahlen)
-%%%----------------------------------------------------------
-
-%\include{1_Einleitung}
-
-\include{captures/01}
-
-%\include{captures/3_Inverse_Probleme}
-
-%\include{captures/4_Rekonstruktionsverfahren}
-
-%\include{captures/ausblick}
-
-%\include{radonTrafo}
-
-%\include{diplomschrift}
-%\include{latex}
-%\include{abbildungen}
-%\include{mathematik}
-%\include{literatur}
-%\include{drucken}
-%\include{schluss}
-
-%%%----------------------------------------------------------
-%%%Anhang
-\appendix
-\include{captures/anhang_a}	% Technische Ergänzungen
-\include{captures/anhang_b}	% Inhalt der CD-ROM/DVD
-%\include{anhang_c}	% Chronologische Liste der Änderungen
-%\include{anhang_d}	% Quelltext dieses Dokuments
-
-%%%----------------------------------------------------------
-\MakeBibliography
-
-\listoffigures % Print the list of figures
-
-%\listoftables % Print the list of tables
-
-%%%----------------------------------------------------------
-
-%%%Messbox zur Druckkontrolle
-%\include{messbox}
-
+		%----------------------------------------------------
+		% Anhänge
+		\appendix
+		\include{captures/04_anhang_a}	% Technische Ergänzungen
+		\include{captures/05_anhang_b}	% Inhalt der CD-ROM/DVD
+		%----------------------------------------------------
+		\MakeBibliography % Print Bibliography
+		\listoffigures % Print the list of figures
+		\listoftables % Print the list of tables
 \end{document}
+%============================================================
