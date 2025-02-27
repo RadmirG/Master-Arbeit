@@ -13,9 +13,9 @@
 \contentsline {subsection}{\numberline {1.5.2}Eigenschaften der Radon Transformation}{12}{subsection.1.5.2}%
 \contentsline {subsubsection}{\nonumberline Linearität von $\mathcal {R}$}{12}{subsubsection*.14}%
 \contentsline {subsubsection}{\nonumberline Stetigkeit von $\mathcal {R}$}{12}{subsubsection*.16}%
-\contentsline {subsubsection}{\nonumberline Adjungierter Operator $\mathcal {R}$}{13}{subsubsection*.18}%
+\contentsline {subsubsection}{\nonumberline Adjungierter Operator $\mathcal {R}$}{14}{subsubsection*.18}%
 \contentsline {subsubsection}{\nonumberline Kompaktheit von $\mathcal {R}$}{15}{subsubsection*.21}%
-\contentsline {subsubsection}{\nonumberline Die Singulärwertzerlegung (SWZ) von $\mathcal {R}$}{16}{subsubsection*.23}%
+\contentsline {subsubsection}{\nonumberline Die Singulärwertzerlegung (SWZ) von $\mathcal {R}$}{17}{subsubsection*.23}%
 \contentsline {chapter}{\numberline {A}Implementierung}{18}{appendix.A}%
 \contentsline {section}{\numberline {A.1}Radon Transformation}{18}{section.A.1}%
 \contentsline {section}{\numberline {A.2}Ungefilterte Rückprojektion}{19}{section.A.2}%
