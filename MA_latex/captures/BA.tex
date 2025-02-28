@@ -1,12 +1,6 @@
-\chapter{Computertomographie}
-\label{cha:1}
+\chapter*{Vorlage der BA}
 
-Der erste Teil dieses Kapitels gibt eine kurze Einführung in die Thematik der Computertomographie (CT). Es werden die Ideen und das Prinzip des CT-Vorgangs erklärt. Dies macht die Inhalte der späteren Kapitel besser verständlich. Eine detailreiche Einführung in die CT-Technik ist in \cite{Buzug04} aufgeführt.
-
-Im zweiten Teil dieses Kapitels werden wir die Beobachtungen aus dem ersten Teil heranziehen und ein mathematisches Modell der Computertomographie aufstellen. Anschließend untersuchen wir einige Eigenschaften des aufgestellten Modells, die vor allem bei der Bildrekonstruktion aus tomographischen Daten eine wichtige Rolle spielen werden. 
-
-\section{Das Prinzip des Computertomographen}
-\label{cha:1.1}
+\section*{Das des Computertomographen}
 
 Das Wort Tomographie setzt sich aus zwei dem Altgriechischen entstammten Wörtern zusammen. $\tau o\mu\eta$ [\textit{tome}], bedeutet Schnitt und $\gamma\rho\alpha\varphi\varepsilon\iota\nu$ [\textit{graphien}] bezeichnet Schreiben. Zusammengefasst zu einem Wort \textit{Tomographie} kann es als Schnittbild eines Objekts verstanden werden. 
 
@@ -46,7 +40,7 @@ Die CT ist ein bildgebendes Verfahren, das in der medizinischen Radiologie und i
 	
 	\end{tikzpicture}
 	\caption{Schematischer Aufbau einer Röntgenaufnahme im Draufsicht. Links ist das Schwächungsprofil nach Durchgang der Röntgenstrahlen durch ein Medium mit verschiedenen Dichten zu sehen (mit der Annahme, dass orangene Kreise höhere Dichte haben, als die graue Fläche).}
-	\label{fig:1.1}
+	\label{fig:1.100}
 \end{figure}
 %----------------------------------------------------------------------------------------
 %	Ende der Grafik
@@ -267,7 +261,7 @@ Die oben beschriebene Rückprojektion aller tomographischen Daten (Projektionen)
 
 Im Folgenden gehen wir mehr auf die mathematisch-physikalischen Gegebenheiten der oben beschriebenen Situation ein. 
 
-\section{Die Radon Transformation}
+\section*{Die Radon Transformation}
 \label{cha:1.2}
 
 Das Verständnis des mathematischen Problems der Bildrekonstruktion in der Computertomographie verlangt zunächst das Verständnis der Entstehung der tomographischen Bilddaten. Die Entstehung solcher Daten kann mithilfe eines mathematischen Modells nachvollzogen werden. Bekanntlich baut man das mathematische Modell auf physikalischen Annahmen auf. Die Abbildung \ref{fig:1.5} soll in diesem Fall als physikalisches Ausgangsmodell dienen. Wir nehmen an, dass der graue Kreis eine homogene Dichteverteilung besitzt. Unter weiteren Annahme sollen die Röntgenstrahlen sich geradlinig ohne Streuung in Richtung des Detektors ausbreiten.
@@ -280,7 +274,7 @@ Die blau gestrichelte Linie in Abbildung \ref{fig:1.5} stelle einen Röntgenstra
 \end{center}
 \begin{equation}
 	I(L_0 + \Delta L) - I(L_0) = - \alpha I(L_0).
-	\label{equa:1.1}
+	\label{equa:1.100}
 \end{equation}
 Der Proportionalitätsfaktor $\alpha$ ist durch das Produkt der Dichteverteilung entlang des Strahls, also $f(L)$ und seiner zurückgelegten Strecke $\parallel \Delta L\parallel$ gegeben. Hier wird angenommen, dass $f(L)$ die Eigenschaften des Materials in sich trägt. Insgesamt ergibt sich
 \begin{equation}
@@ -452,7 +446,7 @@ Somit stellt $p(s,\theta)$ in (\ref{equa:1.11}) genau die Projektion einer unbek
 \end{equation}
 Jedoch offenbaren sich einige mathematische Hürden bei der Inversion von (\ref{equa:1.10}), was die Rekonstruktion von $f$ aus den Projektionsdaten schwierig macht. Um die dahinterstehende Problematik besser verstehen zu können, untersuchen wir zunächst die Eigenschaften von (\ref{equa:1.10}).
 
-\subsection{Kleiner Einschub über $L^2$-Raum}
+\subsection*{Kleiner Einschub über $L^2$-Raum}
 \label{cha:1.2.1}
 
 Um den Operator $\mathcal{R}$ untersuchen zu können, sollte man wissen auf welchen Räumen er operiert. Dieses Wissen erlaubt uns Aussagen über die Stetigkeit, Kompaktheit und auch über die Singulärwertzerlegung (SWZ) von $\mathcal{R}$ zu treffen. Besonders wichtig ist die SWZ, denn anhand dieser ergibt sich eine Möglichkeit den Operator $\mathcal{R}$ zu invertieren. Zudem wollen wir im nächsten Kapitel die Schlechtgestelltheit des computertomographischen Problems diskutieren, welche die Eigenschaften der SWZ benutzt.
@@ -516,7 +510,7 @@ Des Weiteren  wissen wir an dieser Stelle noch nicht wohin $\mathcal{R}$ den Rau
 \end{equation}
 Mit (\ref{equa:1.15}) kann man die Eigenschaften des Operators $\mathcal{R}$ gut untersuchen.
 
-\subsection{Eigenschaften der Radon Transformation}
+\subsection*{Eigenschaften der Radon Transformation}
 \label{cha:1.2.2}
 
 In diesem Kapitel sollen einige Eigenschaften des Operators $\mathcal{R}$ erarbeitet werden. Anhand der Eigenschaften von $\mathcal{R}$ kann die Problematik der Gleichung (\ref{equa:1.12}) besser verstanden werden. Zunächst zeigen wir die Linearität von $\mathcal{R}$. 
