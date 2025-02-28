@@ -21,6 +21,9 @@
 # ======================================================================================================================
 
 import os
+
+from nn_inverse_heat_equa_1D import f_interpolated
+
 # Disables oneDNN optimizations
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
@@ -69,15 +72,10 @@ x_fine = np.linspace(min(x_obs), max(x_obs), 100)
 # Compute interpolated values
 u_interp = interp_func(x_fine)
 
+f_exact = 1 + 4*x_obs
 
-learned_values = {
-    "x": x_obs,
-    "a": np.random.random(size=x_obs.shape),
-    "f": np.random.random(size=x_obs.shape)
-}
-
-def f_source(x_in):
-    return 1 + 4*x_in
+# Interpolate f(x)
+f_interpolated = interp1d(x_obs.flatten(), f_exact.flatten(), kind='cubic', fill_value="extrapolate")
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -88,11 +86,6 @@ def inverse_loss(x_in, outputs):
     a = outputs[:, 1:2]  # Learned a(x)
     f = outputs[:, 2:3]  # Learned f(x)
 
-    # Save a(x) and f(x) at x_obs for later use
-    learned_values["x"] = x_in
-    learned_values["a"] = outputs[:, 1:2]
-    learned_values["f"] = outputs[:, 2:3]
-
     u_t = 0  # ∂u/∂t
     u_x = dde.grad.jacobian(u, x_in)  # ∂u/∂x
     flux_x = a * u_x
@@ -102,9 +95,11 @@ def inverse_loss(x_in, outputs):
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Define boundary conditions (Dirichlet & Neumann)
+@tf.autograph.experimental.do_not_convert
 def boundary_left(x, on_boundary):
     return on_boundary and np.isclose(x[0], 0)
 
+@tf.autograph.experimental.do_not_convert
 def boundary_right(x, on_boundary):
     return on_boundary and np.isclose(x[0], L)
 
@@ -124,25 +119,17 @@ u_bc = dde.icbc.PointSetBC(
     component=0
 )
 
-class UpdateLearnedValuesCallback(Callback):
-    def on_epoch_end(self):
-        # Ensure values are updated at training points
-        global learned_values
-        #if learned_values["a"] is not None and learned_values["f"] is not None:
-        #    print("Updated learned values a(x) and f(x)")
-
-
 # Incorporate learned heat diffusivity a(x)
 a_bc = dde.icbc.PointSetBC(
-    learned_values["x"],
-    learned_values["a"],
+    0,
+    0,
     component=1
 )
 
 # Incorporate learned heat source f(x)
 f_bc = dde.icbc.PointSetBC(
     x_obs,
-    f_source(x_obs),
+    f_interpolated(x_obs),
     component=2
 )
 
@@ -173,11 +160,10 @@ data = dde.data.PDE(
 # Define and train the model
 model = dde.Model(data, pinn)
 loss_weights=[1, 2, 2, 0.5, 0.5] #, 0.5, 0.5]
-model.compile("adam", lr=1e-5, loss_weights=loss_weights)
-# checkpoint_cb = dde.callbacks.ModelCheckpoint("checkpoints/model.keras", save_better_only=True)
-loss_history, train_state = model.train(iterations=10000, callbacks=[UpdateLearnedValuesCallback()]) #,checkpoint_cb])
+model.compile("adam", lr=1e-6, loss_weights=loss_weights) # checkpoint_cb = dde.callbacks.ModelCheckpoint("checkpoints/model.keras", save_better_only=True)
+loss_history, train_state = model.train(iterations=10000) #, callbacks=[checkpoint_cb])
 model.compile("L-BFGS-B", loss_weights=loss_weights)
-loss_history, train_state = model.train(iterations=5000, callbacks=[UpdateLearnedValuesCallback()])
+loss_history, train_state = model.train(iterations=5000)
 
 # ======================================================================================================================
 # FILTERING FOR BEST SAVED MODEL
@@ -222,8 +208,8 @@ loss_history, train_state = model.train(iterations=5000, callbacks=[UpdateLearne
 x_test = np.linspace(0, 1, 100).reshape(-1, 1)
 y_pred = model.predict(x_test)
 
-a_exact = 1 + x_test
-f_exact = 1 + 4*x_test
+a_plot = 1 + x_test
+f_plot = f_interpolated(x_test)
 
 
 # Plotting
@@ -231,7 +217,7 @@ plt.figure(figsize=(12, 6))
 
 # Plot a(x)
 plt.subplot(2, 2, 1)
-plt.plot(x_test, a_exact, label=r"$a(x) = 1 + x$")
+plt.plot(x_test, a_plot, label=r"$a(x) = 1 + x$")
 plt.plot(x_test, y_pred[:, 1], label=r"$a_{l}(x)$ : learned", color='green')
 plt.title(r"Wärmeleitfähigkeit")
 plt.xlabel("x")
@@ -241,7 +227,7 @@ plt.legend()
 
 # Plot f(x)
 plt.subplot(2, 2, 2)
-plt.plot(x_test, f_exact, label=r"$f(x) = 1 + 4x$")
+plt.plot(x_test, f_plot, label=r"$f(x) = 1 + 4x$")
 plt.plot(x_test, y_pred[:, 2], label=r"$f_{l}(x)$ : learned", color='green')
 plt.title(r"Source Term")
 plt.xlabel(r"$x$")
@@ -254,12 +240,13 @@ plt.subplot(2, 1, 2)
 plt.plot(x_test, y_pred[:, 0], label=r"$u_{l}(x)$ : learned", color='green')
 plt.scatter(x_obs, u_obs_values, label="Observed u(x)", color='r', s=5)
 plt.plot(x_fine, u_interp, color='blue', linestyle='--', label="Interpolated $u(x)$")
-plt.title(r"Gelernte und interpolierte Lösungen")
 plt.xlabel(r"$x$")
 plt.ylabel(r"$u(x)$")
 plt.grid()
 plt.legend()
 
+# Add an overall title
+plt.suptitle(r"Implementierung in deapXDE", fontsize=14, fontweight="bold")
 plt.tight_layout()
 plt.show()
 
@@ -270,14 +257,12 @@ plt.show()
 
 # Define loss labels based on the given loss indices
 loss_labels = [
-    "PDE Residual (inverse_loss)",
-    "Observed Data (ic_bc)",
-    #"Heat diffusivity dependency",
-    "Heat source dependency",
-    "Dirichlet BC : u(0) = 0",
-    "Dirichlet BC : u(1) = 0",
-    "Neumann BC (u'(0) = 1)",
-    "Neumann BC (u'(1) = -1)"
+    r"$L_{PDE}$",
+    r"$L_u$",
+    #r"$L_a$",
+    r"$L_f$",
+    r"$L_{DBC_l}$",
+    r"$L_{DBC_r}$"
 ]
 
 # Convert loss_history.loss_train to a NumPy array for easier manipulation
@@ -290,7 +275,6 @@ for i in range(loss_array.shape[1]):  # Iterate over loss components
 plt.grid()
 plt.legend()
 plt.xlabel("Iterations")
-plt.ylabel("Loss (log scale)")
-plt.title("Training Loss")
+plt.ylabel("Loss")
+plt.title("Training Loss deapXDE")
 plt.show()
-

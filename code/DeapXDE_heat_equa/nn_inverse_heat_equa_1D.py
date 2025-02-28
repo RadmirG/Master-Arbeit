@@ -70,9 +70,6 @@ du_L = -1
 n_bc = [du_0, du_L]
 n_bc_tf = tf.convert_to_tensor(n_bc, dtype=tf.float32)
 
-# Generate fine grid for smooth curve
-x_fine = np.linspace(min(x_obs), max(x_obs), 100)
-
 # Interpolate u(x)
 u_interpolated = interp1d(x_obs.flatten(), u_obs_values.flatten(), kind='cubic', fill_value="extrapolate")
 # Interpolate f(x)
@@ -120,35 +117,38 @@ def data_loss(x, outputs):
 
 ## das hier splitten!
 def conditions_loss(u, u_x):
-    loss_d_bc = tf.reduce_mean(tf.square([u[0].numpy(), u[-1].numpy()] - d_bc_tf))
-    loss_n_bc = tf.reduce_mean(tf.square([u_x[0].numpy(), u_x[-1].numpy()] - n_bc_tf))
-    return [loss_d_bc, loss_n_bc]
+    loss_d_bc_1 = tf.reduce_mean(tf.square(u[0].numpy() - d_bc_tf[0]))
+    loss_d_bc_2 = tf.reduce_mean(tf.square(u[-1].numpy() - d_bc_tf[1]))
+
+    loss_n_bc_1 = tf.reduce_mean(tf.square(u_x[0].numpy() - n_bc_tf[0]))
+    loss_n_bc_2 = tf.reduce_mean(tf.square(u_x[-1].numpy() - n_bc_tf[1]))
+    return [loss_d_bc_1, loss_d_bc_2, loss_n_bc_1, loss_n_bc_2]
 
 
 # General loss function
 def loss_pinn(x, outputs, loss_weights, tape):
     loss_pde, u_x, u_flux = pde_loss(x, outputs, tape)
     loss_bc = conditions_loss(outputs[:, 0:1], u_x)
-    loss_d_bc = loss_bc[0]
-    loss_n_bc = loss_bc[1] * 0
+    loss_d_bc_1 = loss_bc[0]
+    loss_d_bc_2 = loss_bc[1]
     loss_data = data_loss(x, outputs)
     loss_u = loss_data[0]
     loss_a = loss_data[1]
     loss_f = loss_data[2]
     loss_general = (loss_weights[0] * loss_pde +
-                    loss_weights[1] * loss_d_bc +
-                    loss_weights[2] * loss_n_bc +
+                    loss_weights[1] * loss_d_bc_1 +
+                    loss_weights[2] * loss_d_bc_2 +
                     loss_weights[3] * loss_u +
                     loss_weights[4] * loss_a +
                     loss_weights[5] * loss_f)
-    return loss_pde, loss_d_bc, loss_n_bc, loss_u, loss_a, loss_f, loss_general
+    return loss_pde, loss_d_bc_1, loss_d_bc_2, loss_u, loss_a, loss_f, loss_general
 
 
 # Training function
 def train_pinn(model, x_train, iterations, learning_rate):
     optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     losses = []     # [1, 2, 2, 0.5, 0.5]
-    loss_weights = [1, 0.5, 0, 2, 0, 2]
+    loss_weights = [1, 0.5, 0.5, 2, 0, 2]
     for epoch in range(iterations):
         with tf.GradientTape(persistent=True) as tape:
             outputs = model(x_train)  # NN outputs [u, a, f]
@@ -233,6 +233,8 @@ def visualize_solution(model, num_points=100):
     plt.grid()
     plt.legend()
 
+    # Add an overall title
+    plt.suptitle(r"Direkte NN Implementierung", fontsize=14, fontweight="bold")
     plt.tight_layout()
     plt.show()
 
@@ -267,12 +269,12 @@ if __name__ == "__main__":
     # Define loss labels based on the given loss indices
     # loss_pde, loss_d_bc, loss_n_bc, loss_u, loss_a, loss_f
     loss_labels = [
-        "PDE Residual (inverse_loss)",
-        "Dirichlet BC",
-        "Neumann BC",
-        "Observed Data (ic_bc)",
-        "Heat diffusivity dependency",
-        "Heat source dependency",
+        r"$L_{PDE}$",
+        r"$L_{DBC_l}$",
+        r"$L_{DBC_r}$",
+        r"$L_u$",
+        r"$L_a$",
+        r"$L_f$"
     ]
 
     # Convert list to a NumPy array
@@ -285,6 +287,6 @@ if __name__ == "__main__":
     plt.grid()
     plt.legend()
     plt.xlabel("Iterations")
-    plt.ylabel("Loss (log scale)")
-    plt.title("Training Loss")
+    plt.ylabel("Loss")
+    plt.title("Training Loss NN")
     plt.show()
