@@ -78,7 +78,11 @@ learned_values = {
 
 def f_source(x_in):
 <<<<<<< HEAD
+<<<<<<< HEAD
     return 1 + 4*x_in
+=======
+    return 1 + 8*x_in
+>>>>>>> 1f24042d8969227776465158c89317d83c20894f
 =======
     return 1 + 8*x_in
 >>>>>>> 1f24042d8969227776465158c89317d83c20894f
@@ -177,8 +181,12 @@ data = dde.data.PDE(
 model = dde.Model(data, pinn)
 loss_weights=[1, 2, 2, 0.5, 0.5] #, 0.5, 0.5]
 <<<<<<< HEAD
+<<<<<<< HEAD
 model.compile("adam", lr=1e-5, loss_weights=loss_weights)
 # checkpoint_cb = dde.callbacks.ModelCheckpoint("checkpoints/model.keras", save_better_only=True)
+=======
+model.compile("adam", lr=1e-5, loss_weights=loss_weights) # checkpoint_cb = dde.callbacks.ModelCheckpoint("checkpoints/model.keras", save_better_only=True)
+>>>>>>> 1f24042d8969227776465158c89317d83c20894f
 =======
 model.compile("adam", lr=1e-5, loss_weights=loss_weights) # checkpoint_cb = dde.callbacks.ModelCheckpoint("checkpoints/model.keras", save_better_only=True)
 >>>>>>> 1f24042d8969227776465158c89317d83c20894f
@@ -250,7 +258,11 @@ plt.legend()
 plt.subplot(2, 2, 2)
 plt.plot(x_test, f_exact, label=r"$f(x) = 1 + 4x$")
 <<<<<<< HEAD
+<<<<<<< HEAD
 plt.plot(x_test, y_pred[:, 2], label=r"$f_{l}(x)$ : learned", color='green')
+=======
+plt.plot(x_test, y_pred[:, 2], label=r"$f_{l}(x)$ : learned", color='orange')
+>>>>>>> 1f24042d8969227776465158c89317d83c20894f
 =======
 plt.plot(x_test, y_pred[:, 2], label=r"$f_{l}(x)$ : learned", color='orange')
 >>>>>>> 1f24042d8969227776465158c89317d83c20894f
@@ -265,8 +277,12 @@ plt.subplot(2, 1, 2)
 plt.plot(x_test, y_pred[:, 0], label=r"$u_{l}(x)$ : learned", color='green')
 plt.scatter(x_obs, u_obs_values, label="Observed u(x)", color='r', s=5)
 <<<<<<< HEAD
+<<<<<<< HEAD
 plt.plot(x_fine, u_interp, color='blue', linestyle='--', label="Interpolated $u(x)$")
 plt.title(r"Gelernte und interpolierte Lösungen")
+=======
+plt.plot(x_fine, u_interp, color='blue', linestyle='--', label="Interpolated Curve")
+>>>>>>> 1f24042d8969227776465158c89317d83c20894f
 =======
 plt.plot(x_fine, u_interp, color='blue', linestyle='--', label="Interpolated Curve")
 >>>>>>> 1f24042d8969227776465158c89317d83c20894f
@@ -308,7 +324,11 @@ plt.xlabel("Iterations")
 plt.ylabel("Loss (log scale)")
 plt.title("Training Loss")
 <<<<<<< HEAD
+<<<<<<< HEAD
 plt.show()
+=======
+plt.show()
+>>>>>>> 1f24042d8969227776465158c89317d83c20894f
 =======
 plt.show()
 >>>>>>> 1f24042d8969227776465158c89317d83c20894f
