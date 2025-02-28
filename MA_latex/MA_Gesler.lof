@@ -1,14 +1,43 @@
 \babel@toc {ngerman}{}\relax 
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {1.1}{\ignorespaces Das Spektrum der elektromagnetischen Strahlung. Quelle: \href {https://de.wikipedia.org/wiki/Elektromagnetisches_Spektrum}{Wikipedia}.}}{2}{figure.caption.2}%
-\contentsline {figure}{\numberline {1.2}{\ignorespaces Schematische Darstellung der Gleichung \ref {equa:1.2_1}, mit $V$ das Volumen eine Mediums, $dV$ Rand (orange) von $V$, $j$ Der Wärmestrom durch $V$, $v \in \ensuremath {\mathbb {R}}^3$ Normalenvektor an $dV$ und $dS$ Tangente an $dV$.}}{3}{figure.caption.4}%
-\contentsline {figure}{\numberline {1.3}{\ignorespaces Schematischer Aufbau einer Röntgenaufnahme im Draufsicht. Links ist das Schwächungsprofil nach Durchgang der Röntgenstrahlen durch ein Medium mit verschiedenen Dichten zu sehen (mit der Annahme, dass orangene Kreise höhere Dichte haben, als die graue Fläche).}}{4}{figure.caption.7}%
-\contentsline {figure}{\numberline {1.4}{\ignorespaces Das Prinzip der Bildrekonstruktion aus CT-Daten mit einer Rückprojektion~(a) und zwei Rückprojektionen~(b).}}{5}{figure.caption.8}%
-\contentsline {figure}{\numberline {1.5}{\ignorespaces Prinzipieller Aufbau eines CT-Scanners der dritten Generation.}}{6}{figure.caption.9}%
-\contentsline {figure}{\numberline {1.6}{\ignorespaces Das Schichtmodell eines Objekts als Grundlage zur dreidimensionalen Rekonstruktion.}}{6}{figure.caption.10}%
-\contentsline {figure}{\numberline {1.7}{\ignorespaces Intensitätsänderung der Röntgenstrahlung beim Passieren eines homogenen Objekts.}}{8}{figure.caption.11}%
-\contentsline {figure}{\numberline {1.8}{\ignorespaces Parametrisierung des Strahls $L$ auf dem Gebiet $\Omega $. }}{9}{figure.caption.12}%
-\contentsline {figure}{\numberline {1.9}{\ignorespaces Ein Beispiel der Rückprojektion eines Projektionswerts $g_{\theta }(s_0)$ auf einen Punkt $x \in \Omega $. Mit $g_{\theta }(s)$ ist hier eine Projektion bei einem festen Winkel $\theta $ bezeichnet, also $g_{\theta }(s) = g(s,\theta )$.}}{15}{figure.caption.19}%
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Das Spektrum der elektromagnetischen Strahlung. Quelle: \href {https://de.wikipedia.org/wiki/Elektromagnetisches_Spektrum}{Wikipedia}.}}{2}{figure.caption.5}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Schematische Darstellung der Gleichung \ref {equa:2.1_1}, mit $V$ das Volumen eine Mediums, $dV$ Rand (orange) von $V$, $j$ Der Wärmestrom durch $V$, $v \in \ensuremath {\mathbb {R}}^3$ Normalenvektor an $dV$ und $dS$ Tangente an $dV$.}}{4}{figure.caption.7}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Schematischer Aufbau einer Röntgenaufnahme im Draufsicht. Links ist das Schwächungsprofil nach Durchgang der Röntgenstrahlen durch ein Medium mit verschiedenen Dichten zu sehen (mit der Annahme, dass orangene Kreise höhere Dichte haben, als die graue Fläche).}}{19}{figure.caption.56}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Das Prinzip der Bildrekonstruktion aus CT-Daten mit einer Rückprojektion~(a) und zwei Rückprojektionen~(b).}}{20}{figure.caption.57}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Prinzipieller Aufbau eines CT-Scanners der dritten Generation.}}{21}{figure.caption.58}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Das Schichtmodell eines Objekts als Grundlage zur dreidimensionalen Rekonstruktion.}}{21}{figure.caption.59}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Intensitätsänderung der Röntgenstrahlung beim Passieren eines homogenen Objekts.}}{22}{figure.caption.61}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Parametrisierung des Strahls $L$ auf dem Gebiet $\Omega $. }}{24}{figure.caption.62}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Ein Beispiel der Rückprojektion eines Projektionswerts $g_{\theta }(s_0)$ auf einen Punkt $x \in \Omega $. Mit $g_{\theta }(s)$ ist hier eine Projektion bei einem festen Winkel $\theta $ bezeichnet, also $g_{\theta }(s) = g(s,\theta )$.}}{29}{figure.caption.71}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Anschauliche Darstellung der Diskretisierung der Dichtefunktion $f$. Entlang des Röntgenstrahls (alle rot umrandeten Pixel) an der Stelle $s_i$ und zu einem festen Winkel $\theta _l = 0$, werden die Werte von $f$ zu dem Wert $p(\tilde {s}_i, \theta _l)$ aufsummiert. $p(\tilde {s}, \theta _l)$ ist der Vektor zu allen Strahlen an den Stellen $\tilde {s}_i$ und somit die Diskretisierung von $g(s,\theta _l)$.}}{36}{figure.caption.78}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Links (a) ist ein Phantombild (Quelle: \textsc {Matlab}\xspace , \texttt {\string phantom(300)}) zu sehen, welches wir für alle Testzwecke in diesem Kapitel benutzen werden. Rechts (b) ist die Radontransformierte von (a) abgebildet. Die Transformation wurde über $\theta \in [0^{\circ }, 180^{\circ }]$ mit einer Schrittweite von $1^{\circ }$ durchgeführt. Das Detektorband hat eine Länge von $k = 300$, wobei $k$ gleich der Anzahl der Tiefenpixel von (a) ist. Somit bestimmt $k$ auch die Anzahl der Strahlen, die durch das Phantombild geschickt worden sind.}}{38}{figure.caption.79}%
+\contentsline {subfigure}{\numberline {(a)}{\ignorespaces {Phantombild}}}{38}{subfigure.9.1}%
+\contentsline {subfigure}{\numberline {(b)}{\ignorespaces {Die Radon Transformation des Phantombildes}}}{38}{subfigure.9.2}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Links (a) ist die Radontransformierte wie in der Abb. \ref {fig:3.2.b}. Rechts (b) ist die ungefilterte Rückprojektion von (b).}}{39}{figure.caption.82}%
+\contentsline {subfigure}{\numberline {(a)}{\ignorespaces {Die Radon Transformation des Phantombildes aus Abb. \ref {fig:3.2.a}.}}}{39}{subfigure.10.1}%
+\contentsline {subfigure}{\numberline {(b)}{\ignorespaces {Ungefilterte Rückprojektion}}}{39}{subfigure.10.2}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces Eine Skizze (links) zur Verdeutlichung der Beziehung zweier Punkte $x_, x_0 \in \Omega $ bezüglich ihrer kartesischen- und Polar-Koordinaten. Die dazugehörige Nebenrechnung (rechts) zeigt deren formelmäßigen Zusammenhang auf.}}{39}{figure.caption.83}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces Eine Veranschaulichung des Fourier-Slice-Theorems. Links ist der Vorgang der Radon Transformation abgebildet, rechts seine Fouriertransformierte.}}{42}{figure.caption.85}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces Links (a) das Rampenfilter, konstruiert passend zu dem Sinogramm aus \ref {fig:3.2.b}. Das Frequenzband des Filters ist durch die isometrische Eigenschaften der FT gleich der Detektorbreite, also ist auch gleich der Tiefe des Sinogramms. Rechts (b) ist die gefilterte Rückprojektion von \ref {fig:3.2.b}, durchgeführt unter der Einwirkung des Rampenfilters aus (a).}}{44}{figure.caption.86}%
+\contentsline {subfigure}{\numberline {(a)}{\ignorespaces {Das Rampenfilter.}}}{44}{subfigure.13.1}%
+\contentsline {subfigure}{\numberline {(b)}{\ignorespaces {Eine mit Rampenfilter gefilterte Rückprojektion.}}}{44}{subfigure.13.2}%
+\contentsline {figure}{\numberline {3.14}{\ignorespaces Links (a) ist ein Phantombild verrauscht mit einem Salzstreuer-Effekt (Quelle: \textsc {Matlab}\xspace ) dargestellt. Rechts (b) ist Die Radontransformierte von (a) und zusätzlich mit einem Salzstreuer-Effekt verrauscht.}}{45}{figure.caption.87}%
+\contentsline {subfigure}{\numberline {(a)}{\ignorespaces {Ein verrauschtes Phantombild.}}}{45}{subfigure.14.1}%
+\contentsline {subfigure}{\numberline {(b)}{\ignorespaces {Die Radontransformierte von (a) und einem zusätzlichem Rauschen.}}}{45}{subfigure.14.2}%
+\contentsline {figure}{\numberline {3.15}{\ignorespaces Eine Rekonstruktion aus den Daten \ref {fig:3.7.b} unter der Einwirkung von drei verschiedenen Filtern. Unten links ist die Filterung mit dem \textit {Ramachandran-Lakshminarayanan-Filter}, mittig mit dem \textit {Shepp-Logan-Filter} und rechts mit dem \textit {Hamming-Fiter} dargestellt.}}{46}{figure.caption.88}%
+\contentsline {figure}{\numberline {3.16}{\ignorespaces Eine Skizze zur Veranschaulichung des Aufbauprinzips der Abbildungsmatrix $A$ von $\mathcal {R}$.}}{47}{figure.caption.92}%
+\contentsline {figure}{\numberline {3.17}{\ignorespaces Eine Veranschaulichung der Arbeitweise des Kaczmarz-Verfahrens in $\ensuremath {\mathbb {R}}^2$.}}{49}{figure.caption.94}%
+\contentsline {figure}{\numberline {3.18}{\ignorespaces Randomisierte iterative Rekonstruktionen (a) nicht verrauscht, (b) verrauscht. Die Projektionen in Beiden Fällen wurden für alle Winkel $\theta $ von $1^{\circ }$ bis $180^{\circ }$ mit der Schrittweite von $1^{\circ }$ berechnet. Detektorbreite ist $k=300$.}}{50}{figure.caption.95}%
+\contentsline {subfigure}{\numberline {(a)}{\ignorespaces {Iterative Rekonstruktion aus nicht verrauschten Daten von \ref {fig:3.2.b}.}}}{50}{subfigure.18.1}%
+\contentsline {subfigure}{\numberline {(b)}{\ignorespaces {Iterative Rekonstruktion aus verrauschten Daten von \ref {fig:3.7.b}}}}{50}{subfigure.18.2}%
+\contentsline {figure}{\numberline {3.19}{\ignorespaces Ein Vergleich des randomisierten und vorwärts projektiven Kaczmarz-Verfahrens. Der Test wurde für die Rekonstruktion eines $50 \times 50$ Pixel großen Bildes durchgeführt. In jedem Testschritt wurde die Winkelanzahl erhöht, sodass die Systemmatrix immer größer wurde.}}{51}{figure.caption.96}%
+\contentsline {figure}{\numberline {3.20}{\ignorespaces (a) Rekonstruktion durch SWZ, für ein Phantombild $(50\times 50)$, Mit der Detektorbreite $k = 50$ und Winkelanzahl $q = 50$. (b) die Konvergenz der Reihe (\ref {equa:2.4}) blau mit Regularisierung $\lambda _{min} = 5.5$ (das Minimum aus (a)), rot ohne Regularisierung.}}{53}{figure.caption.98}%
+\contentsline {subfigure}{\numberline {(a)}{\ignorespaces {Der Fehler bei der Lösung durch SWZ in abhängigkeit von dem Regularisierungsparameter $\lambda $.}}}{53}{subfigure.20.1}%
+\contentsline {subfigure}{\numberline {(b)}{\ignorespaces {Veranschaulichung der Konvergenz der Reihe (\ref {equa:2.4})}}}{53}{subfigure.20.2}%
+\contentsline {figure}{\numberline {3.21}{\ignorespaces Die Folge der Singulärwerte für $A$ aus \ref {fig:3.13.a}}}{53}{figure.caption.99}%
+\contentsline {figure}{\numberline {3.22}{\ignorespaces Die Rekonstruktion des Phantombildes mit der Größe $50\times 50$ Pixel. Links nicht regularisiert $\lambda = 0$, recht Regularisierung mit $\lambda =5.5$.}}{54}{figure.caption.100}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
