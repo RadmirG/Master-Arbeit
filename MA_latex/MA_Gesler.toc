@@ -1,0 +1,78 @@
+\babel@toc {ngerman}{}\relax 
+\contentsline {chapter}{\numberline {1}Einführung}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Was ist Wärmeübertragung}{1}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}Wärmeleitung}{1}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Wärmekonvektion}{1}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}Wärmestrahlung}{1}{subsection.1.1.3}%
+\contentsline {section}{\numberline {1.2}Definition des Vorhabens}{2}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Das Problem}{2}{subsection.1.2.1}%
+\contentsline {chapter}{\numberline {2}Wärmeleitungsproblem}{3}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Herleitung der Wärmeleitungsgleichung}{3}{section.2.1}%
+\contentsline {paragraph}{\nonumberline Temporäres DenkZettel}{4}{paragraph*.9}%
+\contentsline {subsection}{\numberline {2.1.1}Analytische Untersuchung der Wärmeleitungsgleichung}{6}{subsection.2.1.1}%
+\contentsline {section}{\numberline {2.2}Vorwärtsproblem der Wärmeleitungsgleichung}{6}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Herleitung der Variationsformulierung der Wärmegleichung}{6}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Geometrie und Gitter definieren}{6}{subsection.2.2.2}%
+\contentsline {subsubsection}{\nonumberline Warum Geometrie und Gitter definieren?}{7}{subsubsection*.11}%
+\contentsline {subsubsection}{\nonumberline Beispiel für ein rechteckiges Gebiet}{7}{subsubsection*.13}%
+\contentsline {subsection}{\numberline {2.2.3}Funktionsräume definieren}{7}{subsection.2.2.3}%
+\contentsline {subsubsection}{\nonumberline Was sind $P_1$- und $P_2$-Elemente?}{7}{subsubsection*.15}%
+\contentsline {subsubsection}{\nonumberline Warum Funktionsräume definieren?}{7}{subsubsection*.17}%
+\contentsline {subsection}{\numberline {2.2.4}Variationsformulierung herleiten}{7}{subsection.2.2.4}%
+\contentsline {subsubsection}{\nonumberline Herleitung der schwachen Form}{7}{subsubsection*.19}%
+\contentsline {subsection}{\numberline {2.2.5}Zeitdiskretisierung}{8}{subsection.2.2.5}%
+\contentsline {subsubsection}{\nonumberline Warum Zeitdiskretisierung?}{8}{subsubsection*.21}%
+\contentsline {subsection}{\numberline {2.2.6}Backward-Euler-Verfahren}{8}{subsection.2.2.6}%
+\contentsline {subsection}{\numberline {2.2.7}Schlüsselkonzepte}{9}{subsection.2.2.7}%
+\contentsline {section}{\numberline {2.3}Inverses Problem der Wärmeleitung}{9}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Existenz und Eindeutigkeit}{10}{subsection.2.3.1}%
+\contentsline {subsubsection}{\nonumberline Satz 1: Existenz der Lösung}{10}{subsubsection*.23}%
+\contentsline {paragraph}{\nonumberline Beweisidee:}{10}{paragraph*.25}%
+\contentsline {subsubsection}{\nonumberline Satz 2: Eindeutigkeit der Lösung}{10}{subsubsection*.27}%
+\contentsline {paragraph}{\nonumberline Beweis:}{10}{paragraph*.29}%
+\contentsline {subsection}{\numberline {2.3.2}Stabilität}{11}{subsection.2.3.2}%
+\contentsline {subsubsection}{\nonumberline Satz 3: Stabilität der Lösung}{11}{subsubsection*.31}%
+\contentsline {paragraph}{\nonumberline Beweisidee:}{11}{paragraph*.33}%
+\contentsline {subsection}{\numberline {2.3.3}Regularisierung des inversen Problems}{11}{subsection.2.3.3}%
+\contentsline {subsubsection}{\nonumberline Definition (Regularisierte Zielfunktion)}{11}{subsubsection*.35}%
+\contentsline {subsubsection}{\nonumberline Satz 4: Existenz der regularisierten Lösung}{11}{subsubsection*.37}%
+\contentsline {paragraph}{\nonumberline Beweis:}{11}{paragraph*.39}%
+\contentsline {section}{\numberline {2.4}Ansatz des maschinellen Lernens}{12}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Statistisches Lernen: Grundlagen}{12}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Definition des statistischen Lernens}{12}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}Lineare Modelle und Regression}{12}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}Nichtlineare Modelle und neuronale Netze}{13}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.4}Das Prinzip der neuronalen Netze (NN)}{13}{subsection.2.5.4}%
+\contentsline {subsubsection}{\nonumberline Vorwärtsdurchlauf (Forward Pass)}{13}{subsubsection*.41}%
+\contentsline {subsubsection}{\nonumberline Fehlermessung (Loss-Funktion)}{14}{subsubsection*.43}%
+\contentsline {subsubsection}{\nonumberline Backpropagation (Gradientenberechnung)}{14}{subsubsection*.45}%
+\contentsline {subsubsection}{\nonumberline Gradientenabstieg (Gewichtsaktualisierung)}{15}{subsubsection*.47}%
+\contentsline {subsection}{\numberline {2.5.5}Optimierte Gradienten-Methoden}{15}{subsection.2.5.5}%
+\contentsline {subsubsection}{\nonumberline Stochastischer Gradientenabstieg (SGD)}{15}{subsubsection*.49}%
+\contentsline {subsubsection}{\nonumberline Adam Optimizer}{15}{subsubsection*.51}%
+\contentsline {section}{\numberline {2.6}Einführung in Physics-Informed Neural Networks}{15}{section.2.6}%
+\contentsline {subsection}{\numberline {2.6.1}Motivation für PINNs}{15}{subsection.2.6.1}%
+\contentsline {subsection}{\numberline {2.6.2}Theorie für das inverse Problem der Wärmeleitung}{15}{subsection.2.6.2}%
+\contentsline {subsubsection}{\nonumberline Das zugrunde liegende Problem}{15}{subsubsection*.53}%
+\contentsline {subsection}{\numberline {2.6.3}Formulierung als Variationsproblem}{16}{subsection.2.6.3}%
+\contentsline {subsection}{\numberline {2.6.4}Existenz und Eindeutigkeit}{16}{subsection.2.6.4}%
+\contentsline {subsection}{\numberline {2.6.5}PINNs für das inverse Problem}{16}{subsection.2.6.5}%
+\contentsline {subsection}{\numberline {2.6.6}Eigenschaften und Herausforderungen}{17}{subsection.2.6.6}%
+\contentsline {chapter}{\numberline {3}Auswertung der praktischen Arbeit}{18}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Architektur der Implementierung}{18}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Diskussion der Ergebnisse}{18}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Ausblick}{18}{section.3.3}%
+\contentsline {subsubsection}{\nonumberline Linearität von $\mathcal {R}$}{27}{subsubsection*.66}%
+\contentsline {subsubsection}{\nonumberline Stetigkeit von $\mathcal {R}$}{27}{subsubsection*.68}%
+\contentsline {subsubsection}{\nonumberline Adjungierter Operator $\mathcal {R}$}{28}{subsubsection*.70}%
+\contentsline {subsubsection}{\nonumberline Kompaktheit von $\mathcal {R}$}{30}{subsubsection*.73}%
+\contentsline {subsubsection}{\nonumberline Die Singulärwertzerlegung (SWZ) von $\mathcal {R}$}{31}{subsubsection*.75}%
+\contentsline {subsubsection}{\nonumberline Aufbau der Systemmatrix $A$ von $\mathcal {R}$}{47}{subsubsection*.91}%
+\contentsline {chapter}{\numberline {A}Implementierung}{55}{appendix.A}%
+\contentsline {chapter}{\numberline {B}Inhalte der vollen Masterarbeit}{56}{appendix.B}%
+\contentsline {paragraph}{\nonumberline Format:}{56}{paragraph*.102}%
+\contentsline {section}{\numberline {B.1}PDF-Dateien}{56}{section.B.1}%
+\contentsline {section}{\numberline {B.2}Python Code}{56}{section.B.2}%
+\contentsline {chapter}{\nonumberline Quellenverzeichnis}{57}{chapter*.103}%
+\contentsline {section}{\nonumberline Literatur}{57}{section*.105}%
+\providecommand \tocbasic@end@toc@file {}\tocbasic@end@toc@file 

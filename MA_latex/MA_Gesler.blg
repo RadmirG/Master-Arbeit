@@ -1,0 +1,17 @@
+[0] Config.pm:307> INFO - This is Biber 2.19
+[0] Config.pm:310> INFO - Logfile is 'MA_Gesler.blg'
+[171] biber-MSWIN64:340> INFO - === 
+[228] Biber.pm:419> INFO - Reading 'MA_Gesler.bcf'
+[439] Biber.pm:979> INFO - Found 9 citekeys in bib section 0
+[465] Biber.pm:4419> INFO - Processing section 0
+[485] Biber.pm:4610> INFO - Looking for bibtex file 'literatur.bib' for section 0
+[567] bibtex.pm:1713> INFO - LaTeX decoding ...
+[611] bibtex.pm:1519> INFO - Found BibTeX data source 'literatur.bib'
+[719] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'variable = shifted' with 'variable = non-ignorable'
+[719] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[719] Biber.pm:4239> INFO - Sorting list 'nty/global//global/global' of type 'entry' with template 'nty' and locale 'de-DE'
+[719] Biber.pm:4245> INFO - No sort tailoring available for locale 'de-DE'
+[746] bbl.pm:660> INFO - Writing 'MA_Gesler.bbl' with encoding 'UTF-8'
+[754] bbl.pm:763> INFO - Output to MA_Gesler.bbl
+[754] Biber.pm:131> WARN - legacy year field 'S. 53-75' in entry 'Nashed' is not an integer - this will probably not sort properly.
+[754] Biber.pm:133> INFO - WARNINGS: 1
