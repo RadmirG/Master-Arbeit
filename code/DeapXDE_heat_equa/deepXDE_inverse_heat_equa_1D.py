@@ -22,13 +22,10 @@
 
 import os
 
-from nn_inverse_heat_equa_1D import f_interpolated
-
 # Disables oneDNN optimizations
-os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+#os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
 import deepxde as dde
-from deepxde.callbacks import Callback
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -46,23 +43,23 @@ domain = dde.geometry.Interval(0, L)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Observed data for u(x, t)
-def u_obs(xml_file):
+def u_obs(xml_file, points_number):
     tree = ET.parse(xml_file)
     root = tree.getroot()
     x_obs = np.array([float(x) for x in root.find("Point").text.split()]).reshape(-1, 1)
     u_obs = np.array([float(u) for u in root.find("PointData").text.split()]).reshape(-1, 1)
 
     # Randomly select `num_points` while keeping the distribution diverse
-    if len(x_obs) > 10:
+    if len(x_obs) > points_number:
         # Evenly spaced selection
-        indices = np.linspace(0, len(x_obs) - 1, 10, dtype=int)
+        indices = np.linspace(0, len(x_obs) - 1, points_number, dtype=int)
         x_obs = x_obs[indices]
         u_obs = u_obs[indices]
 
     return x_obs, u_obs
 
 # Load observed data
-x_obs, u_obs_values = u_obs("u_1D.xml")
+x_obs, u_obs_values = u_obs("u_1D.xml", 11)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Interpolate u(x)
@@ -76,7 +73,6 @@ f_exact = 1 + 4*x_obs
 
 # Interpolate f(x)
 f_interpolated = interp1d(x_obs.flatten(), f_exact.flatten(), kind='cubic', fill_value="extrapolate")
-
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Define the inverse problem loss
@@ -159,46 +155,11 @@ data = dde.data.PDE(
 
 # Define and train the model
 model = dde.Model(data, pinn)
-loss_weights=[1, 2, 2, 0.5, 0.5] #, 0.5, 0.5]
-model.compile("adam", lr=1e-6, loss_weights=loss_weights) # checkpoint_cb = dde.callbacks.ModelCheckpoint("checkpoints/model.keras", save_better_only=True)
-loss_history, train_state = model.train(iterations=10000) #, callbacks=[checkpoint_cb])
+loss_weights=[1, 2, 0.1, 0.5, 0.5]
+model.compile("adam", lr=1e-6, loss_weights=loss_weights)
+loss_history, train_state = model.train(iterations=10000)
 model.compile("L-BFGS-B", loss_weights=loss_weights)
 loss_history, train_state = model.train(iterations=5000)
-
-# ======================================================================================================================
-# FILTERING FOR BEST SAVED MODEL
-# ======================================================================================================================
-
-# Load the best checkpoint after training
-# ckpt = tf.train.get_checkpoint_state(".")  # Check current directory
-#
-# if ckpt and ckpt.model_checkpoint_path:
-#     best_checkpoint = ckpt.model_checkpoint_path
-#     print("Best checkpoint found:", best_checkpoint)
-# else:
-#     print("No checkpoint found.")
-#
-# model.restore(best_checkpoint)
-# Find and load the best checkpoint
-# # checkpoint_files = glob.glob("checkpoints/model.keras*")
-# #
-# # if checkpoint_files:
-# #     best_checkpoint = max(checkpoint_files, key=os.path.getctime)
-# #     print(f"Restoring best checkpoint: {best_checkpoint}")
-# #     model.restore(best_checkpoint)
-# # else:
-# #     print("No checkpoint found, training from scratch.")
-
-# # Get all checkpoint-related files
-# all_ckpt_files = (glob.glob("checkpoints/model.keras*"))
-# best_ckpt_prefix = best_checkpoint.split("\\")[-1]  # Extracts only the filename
-# # Delete all except the best ones
-# for file in all_ckpt_files:
-#     if not any(file.endswith(ext) and best_ckpt_prefix in file for ext in [".index", ".meta", ".data-00000-of-00001"]):
-#         os.remove(file)
-#         print(f"Deleted: {file}")
-# print("Cleanup complete! Only the best checkpoint is retained.")
-
 
 # ======================================================================================================================
 # PREPARE PLOTS
@@ -240,6 +201,7 @@ plt.subplot(2, 1, 2)
 plt.plot(x_test, y_pred[:, 0], label=r"$u_{l}(x)$ : learned", color='green')
 plt.scatter(x_obs, u_obs_values, label="Observed u(x)", color='r', s=5)
 plt.plot(x_fine, u_interp, color='blue', linestyle='--', label="Interpolated $u(x)$")
+plt.title(r"Gelernte und interpolierte Lösungen")
 plt.xlabel(r"$x$")
 plt.ylabel(r"$u(x)$")
 plt.grid()
@@ -250,10 +212,10 @@ plt.suptitle(r"Implementierung in deapXDE", fontsize=14, fontweight="bold")
 plt.tight_layout()
 plt.show()
 
+
 # ======================================================================================================================
 # LOSSES PLOT
 # ======================================================================================================================
-# dde.saveplot(loss_history, train_state, issave=True, isplot=True) # standard data loss plot, I guess
 
 # Define loss labels based on the given loss indices
 loss_labels = [
@@ -263,6 +225,8 @@ loss_labels = [
     r"$L_f$",
     r"$L_{DBC_l}$",
     r"$L_{DBC_r}$"
+    #r"$L_{NBC_l}$",
+    #r"$L_{NBC_r}$"
 ]
 
 # Convert loss_history.loss_train to a NumPy array for easier manipulation
