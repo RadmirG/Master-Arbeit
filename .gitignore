@@ -1,6 +1,7 @@
-Code/DeapXDE_heat_equa/.idea
 Code/DeapXDE_heat_equa/.venv
 
+MA_latex
+tmp
 
 *.aux
 *.bcf
@@ -12,3 +13,4 @@ Code/DeapXDE_heat_equa/.venv
 *.bbl
 *.out
 *.blg
+*~
