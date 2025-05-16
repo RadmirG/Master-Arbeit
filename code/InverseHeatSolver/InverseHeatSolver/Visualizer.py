@@ -7,7 +7,6 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
 
 
-
 def plot_losses(loss_history): # , loss_labels=None):
     # === Plot U-loss ===
     if "u_history" in loss_history:
@@ -158,9 +157,9 @@ def plot_3d(x, y, u_pred, f_pred, a_pred, is_time_plot=False):
         ax3.set_ylabel(r'$t$')
         ax3.set_zlabel(r'$a(x)$')
     else:
-        ax2.set_title(r"$a(x,y)$")
-        ax2.set_ylabel(r'$y$')
-        ax2.set_zlabel(r'$a(x,y)$')
+        ax3.set_title(r"$a(x,y)$")
+        ax3.set_ylabel(r'$y$')
+        ax3.set_zlabel(r'$a(x,y)$')
 
     plt.tight_layout()
     plt.show()

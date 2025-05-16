@@ -22,23 +22,19 @@
 # ======================================================================================================================
 # Radmir Gesler, 2024, master thesis at BHT Berlin by Prof. Dr. Frank Haußer
 # ======================================================================================================================
-import itertools
 import json
 import os
-import pickle
 import shutil
 import time
 
-import deepxde as dde
 import numpy as np
 
-from InverseHeatSolver.CompositeModel import CompositeModel
+
 from InverseHeatSolver.Interpolator import Interpolator
+from InverseHeatSolver.PdeMinimizer import PdeMinimizer
+from InverseHeatSolver.PdeMinimizerDeepXde import PdeMinimizerDeepXde
 
-from InverseHeatSolver.Visualizer import plot_1D
 
-
-import tensorflow as tf
 # tf.config.threading.set_intra_op_parallelism_threads(4)
 # tf.config.threading.set_inter_op_parallelism_threads(2)
 #
@@ -66,283 +62,160 @@ import tensorflow as tf
 #                |    'u_obs' : [u_1, ..., u_k],       |    not None
 #                |    'f_obs' : [f_1, ..., f_q]]       |    can be None
 # ---------------|-------------------------------------|----------------------------------------------------------------
-# u_dbc          |   @func(x,t)                        |    Dirichlet BC, not None
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# u_ic           |   @func(x,t=0)                      |    Initial conditions, None, if time independent
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# u_nbc          |   @func(x,t=0)                      |    Neumann BC, can be None
-# ---------------|-------------------------------------|----------------------------------------------------------------
 # loss_weights   |   ['w_PDE_loss'  : _,               |    not None
-#                |    'w_BC_loss'   : _,               |    not None
-#                |    'w_IC_loss'   : _,               |    can be None
-#                |    'w_NBC_loss'  : _,               |    can be None
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# model_optim... |  False by default                   |    if True the L-BFGS-B optimizer will be used
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# save_plot      |  False by default                   |    Standard plot for learned values and losses of deepXDE
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# num_domain     |
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# num_boundary   |
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# num_initial    |
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# num_test       |
+#                |    'a_grad_loss'  : _ ]             |    can be None
 # ======================================================================================================================
 # INTERNAL VARIABLES STRUCTURE
 # ----------------------------------------------------------------------------------------------------------------------
-# ...
+# u_model
+# f_model
+# a_model
+# total_iterations
+# training_time
+# two_dim
+# time_dependent
+# u_obs
+# f_obs
+# observed_domain
+# dimension
 # ======================================================================================================================
 
 
 class InverseHeatSolver:
-    def __init__(self, domain, nn_dims, obs_values, loss_weights, learning_rate, u_dbc, u_ic=None, u_nbc=None,
-                 num_domain=1000, num_boundary=100, num_initial=None, num_test=1000):
-        self.total_iterations = 0
-        self.dimension = 1
-        self.callbacks = []
-        self.f_model = None
+    def __init__(self, domain, nn_dims, obs_values, loss_weights, learning_rate, use_deep_xde=False):
+        self.history = None
         self.u_model = None
-        self.model_u_frozen = None
-        self.domain = domain
-        self.two_dim = False
-        self.time_dependent = False
-        self.observed_domain = None
-        self.boundary_coordinates = None
-        self.u_obs = None
-        self.f_obs = None
-        self.initial_coordinates = None
-        self.pinn_domain = None
-        self.model = None
-        self.num_domain = num_domain
-        self.num_boundary = num_boundary
-        self.num_initial = num_initial
-        self.num_test = num_test
+        self.f_model = None
+        self.a_model = None
 
-        # --------------------------------------------------------------------------------------------------------------
-        # prepare initial objects
-        self.prepare_domain()
-        self.nn_dims = nn_dims
-        self.prepare_observed_values(obs_values)
-        self.u_dirichlet_bc = u_dbc
-        self.u_neumann_bc = u_nbc
-        self.u_initial_conditions = u_ic
-        self.loss_weights = loss_weights
-        self.learning_rate = learning_rate
-
-        # --------------------------------------------------------------------------------------------------------------
-        self.loss_history = None
-        self.train_state = None
+        self.total_iterations = 0
         self.training_time = 0
 
-# ----------------------------------------------------------------------------------------------------------------------
-# preparing section
+        self.domain = domain
+        self.two_dim = True if self.domain['y_domain'] is not None else False
+        self.time_dependent = True if self.domain['t_domain'] is not None else False
 
-    def prepare_observed_values(self, obs_values):
+        self.nn_dims = nn_dims
+
         self.u_obs = obs_values['u_obs']
         self.f_obs = obs_values['f_obs']
         self.observed_domain = obs_values['dom_obs']
         self.dimension = self.observed_domain.shape[1]
 
-    def prepare_domain(self):
-        # Dimensions dependency
-        if self.domain['y_domain'] is not None:
-            self.two_dim = True
-        if self.domain['t_domain'] is not None:
-            self.time_dependent = True
+        self.loss_weights = loss_weights
+        self.learning_rate = learning_rate
+        self.use_deep_xde = use_deep_xde
+        # --------------------------------------------------------------------------------------------------------------
 
-        x_start, x_end = self.domain['x_domain'][:2]
-        geometry_domain = dde.geometry.Interval(x_start, x_end)
-        if self.two_dim:
-            y_start, y_end = self.domain['y_domain'][:2]
-            geometry_domain = dde.geometry.Rectangle([x_start, x_end], [y_start, y_end])
-        if self.time_dependent:
-            t_start, t_end = self.domain['t_domain'][:2]
-            time_domain = dde.geometry.TimeDomain(t_start, t_end)
-            self.pinn_domain = dde.geometry.GeometryXTime(geometry_domain, time_domain)
-        else:
-            self.pinn_domain = geometry_domain
+# ----------------------------------------------------------------------------------------------------------------------
+# preparing section
 
-    def prepare_test_domain(self):
+    def prepare_train_domain(self):
         x_start, x_end, x_samp = self.domain['x_domain']
-        # x_domain = np.linspace(x_start, x_end, x_samp)
         x_domain = np.random.uniform(x_start, x_end, size=(x_samp, 1))
         if self.domain['y_domain'] is not None:
             y_start, y_end, y_samp = self.domain['y_domain']
-            y_domain = np.linspace(y_start, y_end, y_samp)
+            y_domain = np.random.uniform(y_start, y_end, size=(y_samp, 1))
             if self.domain['t_domain'] is not None:
                 t_start, t_end, t_samp = self.domain['t_domain']
                 t_domain = np.linspace(t_start, t_end, t_samp)
-                test_domain = np.column_stack((x_domain.flatten(), y_domain.flatten(), t_domain.flatten()))
+                X, Y, T = np.meshgrid(x_domain, y_domain, t_domain, indexing='ij')
+                train_domain = np.column_stack((X.flatten(), Y.flatten(), T.flatten()))
             else:
-                test_domain = np.column_stack((x_domain.flatten(), y_domain.flatten()))
+                train_domain = np.column_stack((x_domain.flatten(), y_domain.flatten()))
         else:
             if self.domain['t_domain'] is not None:
                 t_start, t_end, t_samp = self.domain['t_domain']
                 t_domain = np.linspace(t_start, t_end, t_samp)
-                test_domain = np.column_stack((x_domain.flatten(), t_domain.flatten()))
+                X, T = np.meshgrid(x_domain, t_domain)
+                train_domain = np.column_stack((X.flatten(), T.flatten()))
             else:
-                test_domain = x_domain.reshape(x_samp, 1)
-        return test_domain
-
-# ----------------------------------------------------------------------------------------------------------------------
-# losses section
-
-    def inverse_loss(self, x_in, outputs):
-        if self.u_model is not None:
-            u = self.u_model(x_in)  # Interpolated u(x)
-        else:
-            raise ValueError('Keras Model NN for u(.) is None')
-
-        if self.f_model is not None:
-            f = self.u_model(x_in)  # Interpolated f(x)
-        else:
-            f = 0
-        a = outputs
-
-        if not self.two_dim:
-            u_x = dde.grad.jacobian(u, x_in, i=0, j=0)  # ∂u/∂x
-            flux_x = a * u_x
-            flux_xx = dde.grad.jacobian(flux_x, x_in, i=0, j=0)  # ∂(a ∂u/∂x)/∂x
-        else:
-            u_x = dde.grad.jacobian(u, x_in, i=0, j=0)  # ∂u/∂x
-            u_y = dde.grad.jacobian(u, x_in, i=0, j=1)  # ∂u/∂y
-            flux_x = a * u_x
-            flux_y = a * u_y
-            flux_xx = dde.grad.jacobian(flux_x, x_in, i=0, j=0)
-            flux_yy = dde.grad.jacobian(flux_y, x_in, i=0, j=1)
-
-        if not self.two_dim and not self.time_dependent:
-            res = - flux_xx - f
-        elif not self.two_dim and self.time_dependent:
-            u_t = dde.grad.jacobian(u, x_in, i=0, j=1)  # ∂u/∂t
-            res = u_t - flux_xx - f
-        elif self.two_dim and not self.time_dependent:
-            res = - (flux_xx + flux_yy) - f
-        else:
-            u_t = dde.grad.jacobian(u, x_in, i=0, j=2)  # ∂u/∂t
-            res = u_t - (flux_xx + flux_yy) - f
-        return res
-
-    @staticmethod
-    def boundary(x, on_boundary):
-        return on_boundary
-
-    @staticmethod
-    def initial(x, on_initial):
-        return on_initial
-
-    def balance_loss_weights(self):
-        current_losses = np.array(self.model.losshistory.loss_train[-1])
-        L_res = np.abs(np.min(current_losses) - np.max(current_losses))
-        L_mean = np.median(current_losses)
-        if L_res > L_mean:
-            print("Loss weights before balance:", self.loss_weights)
-            non_zero_mask = current_losses != 0
-            inverse_losses = np.zeros_like(current_losses)
-            inverse_losses[non_zero_mask] = 1.0 / current_losses[non_zero_mask]
-            normalized_weights = inverse_losses / np.sum(inverse_losses)
-            for key, new_weight in zip(self.loss_weights.keys(), normalized_weights):
-                self.loss_weights[key] = float(new_weight)
-            print("Loss weights after balance:", self.loss_weights)
+                train_domain = x_domain.reshape(x_samp, 1)
+        return train_domain
 
 # ----------------------------------------------------------------------------------------------------------------------
 # model section
 
-    def prepare_model(self):
-        # condition_losses = []
-        # u_bc_loss = dde.icbc.DirichletBC(self.pinn_domain, self.u_dirichlet_bc, self.boundary, component=0)
-        # condition_losses.append(u_bc_loss)
-        # if self.u_initial_conditions is not None and self.time_dependent:
-        #     ic_loss = dde.icbc.IC(self.pinn_domain, self.u_initial_conditions, self.initial, component=0)
-        #     condition_losses.append(ic_loss)
-        # if self.u_neumann_bc is not None:
-        #     u_nbc_loss = dde.icbc.NeumannBC(self.pinn_domain, self.u_neumann_bc, self.boundary, component=0)
-        #     condition_losses.append(u_nbc_loss)
-
-        if self.time_dependent:
-            data = dde.data.TimePDE(self.pinn_domain, self.inverse_loss, [],
-                                    num_domain=self.num_domain, num_boundary=self.num_boundary,
-                                    num_initial=self.num_initial, anchors=self.prepare_test_domain(),
-                                    num_test=self.num_test)
-        else:
-            data = dde.data.PDE(self.pinn_domain, self.inverse_loss, [],
-                                num_domain=self.num_domain, num_boundary=self.num_boundary,
-                                anchors=self.prepare_test_domain(), num_test=self.num_test)
-
-        a_net = dde.nn.FNN([1] + [10] + [20] + [10] + [1], "tanh", "Glorot normal")
-        # a_net = dde.nn.FNN([2 if self.two_dim else 1] +
-        #                    [self.nn_dims['num_neurons']] * self.nn_dims['num_layers'] +
-        #                    [1], "tanh", "Glorot normal")
-        composed_model = CompositeModel(a_net, self.time_dependent, self.two_dim)
-        self.model = dde.Model(data, composed_model)
-
-    def train(self, iterations=10000, u_iterations=5000, f_iterations=5000, display_results_every=1000, model_optimization=False,
-              callback_path="callbacks", best_model_name="best_model.ckpt"):
-
-        ################################################################################################################
-        global global_step
-        global_step = tf.Variable(0, trainable=False, dtype=tf.int32)
-        ################################################################################################################
-
-        self.prepare_save_dir(callback_path)
+    def train(self, a_iterations=10000, u_iterations=5000, f_iterations=5000, display_results_every=100,
+              save_path="callbacks"):
+        self.prepare_save_dir(save_path)
         start_time = time.time()
         # First stage: interpolates u and f on measured data
-        self.learn_u_and_f(u_iterations, f_iterations, callback_path)
+        u_history, f_history = self.learn_u_and_f(u_iterations, f_iterations, display_results_every)
         # Second stage: learning u
-        self.learn_a(best_model_name, callback_path, display_results_every, iterations, model_optimization)
+        a_history = self.learn_a(a_iterations, display_results_every)
 
-        self.total_iterations = self.train_state.step
+        self.total_iterations = a_history.steps
         self.training_time = time.time() - start_time
-        self.save_model_and_params(callback_path, best_model_name, prepare_dir=False)
+        self.prepare_history(a_history, f_history, u_history)
+        self.save_model_and_params(save_path, prepare_dir=False)
 
-    def learn_a(self, best_model_name, callback_path, display_results_every, iterations, model_optimization):
-        # !!!MAYBE NEEDS TO EXTEND TRAINING ANCHORS!!! #
-        self.prepare_model()
-        callbacks = self.prepare_callbacks(best_model_name, callback_path)
+        return self.history
+
+    def prepare_history(self, a_history, f_history, u_history):
+        self.history = {
+            "u_history": {
+                "loss": u_history[0],
+                "steps": u_history[1]
+            },
+            "f_history": {
+                "loss": f_history[0],
+                "steps": f_history[1]
+            },
+            "a_history": {
+                "loss": a_history.losses['loss'],
+                "pde_loss": a_history.losses['pde_loss'],
+                "a_grad_loss": a_history.losses['a_grad_loss'],
+                "steps": a_history.steps
+            }
+        }
+
+    def learn_a(self, a_iterations, display_results_every):
         print('#####################################################')
         print('# Starts to learn a(.) ...                          #')
         print('#####################################################')
-        self.model.compile("adam", lr=self.learning_rate, loss_weights=list(self.loss_weights.values()))
-        self.loss_history, self.train_state = self.model.train(iterations=iterations,
-                                                               display_every=display_results_every,
-                                                               callbacks=callbacks)
-        if model_optimization:
-            self.model.compile("L-BFGS-B", loss_weights=list(self.loss_weights.values()))
-            self.loss_history, self.train_state = self.model.train(callbacks=callbacks)
+        if self.use_deep_xde:
+            self.a_model = PdeMinimizerDeepXde(self.domain, self.prepare_train_domain(), u_model=self.u_model,
+                                               f_model=self.f_model, input_dim=self.dimension,
+                                               nn_dims=self.nn_dims, lr=self.learning_rate,
+                                               time_dependent=self.time_dependent, two_dim=self.two_dim)
+            a_history = self.a_model.train(self.loss_weights, a_iterations, print_every=display_results_every,
+                                           early_stop=1e-6)
+        else:
+            if self.time_dependent:
+                dim = self.dimension - 1
+            else:
+                dim = self.dimension
+            self.a_model = PdeMinimizer(u_model=self.u_model, f_model=self.f_model, input_dim=dim,
+                                        nn_dims=self.nn_dims, lr=self.learning_rate, time_dependent=self.time_dependent,
+                                        two_dim=self.two_dim)
+            a_history = self.a_model.train(self.prepare_train_domain(), self.loss_weights, a_iterations,
+                                           print_every=display_results_every)
+        return a_history
 
-    def learn_u_and_f(self, u_iterations, f_iterations, callback_path):
+    def learn_u_and_f(self, u_iterations, f_iterations, display_results_every):
         print('#####################################################')
         print('# Starts to learn u(.) from observed u-measurements #')
         print('#####################################################')
-        self.u_model = Interpolator(self.dimension)
-        self.u_model.fit(self.observed_domain, self.u_obs, iterations=u_iterations)
-        self.u_model.model.save_weights(os.path.join(callback_path, str("u_model.weights.h5")))
+        self.u_model = Interpolator(self.dimension, lr=self.learning_rate)
+        u_loss, u_steps = self.u_model.fit(self.observed_domain, self.u_obs, iterations=u_iterations,
+                                           print_every=display_results_every)
+        f_loss = None
+        f_steps = None
         if self.f_obs is not None:
             print('#####################################################')
             print('# Starts to learn f(.) from observed f-measurements #')
             print('#####################################################')
             # Assumes that the source should be allways a positive value
-            self.f_model = Interpolator(self.dimension, positive_output=True)
-            self.f_model.fit(self.observed_domain, self.f_obs, iterations=f_iterations, early_stop=1e-8)
-            self.f_model.model.save_weights(os.path.join(callback_path, str("f_model.weights.h5")))
-
-    def prepare_callbacks(self, best_model_name, callback_path):
-        pde_resampler = dde.callbacks.PDEPointResampler(period=100)
-        checkpoint_cb = dde.callbacks.ModelCheckpoint(
-            filepath=os.path.join(callback_path, best_model_name),
-            verbose=1,  # Print messages when saving the model
-            save_better_only=True,
-            period=1,
-            monitor='test loss'
-        )
-        early_stopping = dde.callbacks.EarlyStopping(baseline=1e-4, monitor='loss_train', patience=100)
-        self.callbacks = [checkpoint_cb, pde_resampler, early_stopping]
+            self.f_model = Interpolator(self.dimension, lr=self.learning_rate, positive_output=True)
+            f_loss, f_steps = self.f_model.fit(self.observed_domain, self.f_obs, iterations=f_iterations,
+                                               print_every=display_results_every)
+        return [u_loss, u_steps], [f_loss, f_steps]
 
     def predict(self, inp):
         u = self.u_model.predict(inp)
         f = self.f_model.predict(inp)
-        a = self.model.predict(inp)#.numpy()
+        a = self.a_model.predict(inp)
         return [u, f, a]
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -356,32 +229,69 @@ class InverseHeatSolver:
         # Training time formated as HH:MM:SS.MMM
         return f"Training time: {hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}"
 
-    def save_model_and_params(self, save_dir, model_name_str="nn_model", prepare_dir=True):
-        if prepare_dir and not self.prepare_save_dir(save_dir):
-            print(f'failed to prepare save dir : {save_dir}')
+    def save_model_and_params(self, save_path, prepare_dir=True):
+        if prepare_dir and not self.prepare_save_dir(save_path):
+            print(f'failed to prepare save dir : {save_path}')
             return
 
-        self.model.save(os.path.join(save_dir, str(model_name_str)))
+        #self.a_model.a_model.save_weights(os.path.join(save_path, str("a_model.weights.h5")))
+        self.a_model.save(save_path, "a_model.weights.h5")
+        self.u_model.save(save_path, "u_model.weights.h5")
+        #self.u_model.model.save_weights(os.path.join(save_path, str("u_model.weights.h5")))
+        if self.f_model is not None:
+            #self.f_model.model.save_weights(os.path.join(save_path, str("f_model.weights.h5")))
+            self.f_model.save(save_path, str("f_model.weights.h5"))
+
+        obs_values = {'dom_obs': self.observed_domain.tolist(),
+                      'u_obs': self.u_obs.tolist(),
+                      'f_obs': self.f_obs.tolist()}
+
+        history = {
+            "u_history": {
+                "loss": self.history['u_history']['loss'],
+                "steps": self.history['u_history']['steps']
+            },
+            "f_history": {
+                "loss": self.history['f_history']['loss'],
+                "steps": self.history['f_history']['steps']
+            },
+            "a_history": {
+                "loss": self.history['a_history']['loss'],
+                "pde_loss": self.history['a_history']['pde_loss'],
+                "a_grad_loss": self.history['a_history']['a_grad_loss'],
+                "steps": self.history['a_history']['steps']
+            }
+        }
+
         hyper_params = {
             'domain': self.domain,
             'nn_dims': self.nn_dims,
+            'obs_values': obs_values,
             'loss_weights': self.loss_weights,
-            'total_iterations': self.total_iterations,
             'learning_rate': self.learning_rate,
-            'num_domain': self.num_domain,
-            'num_boundary': self.num_boundary,
-            'num_initial': self.num_initial,
-            'num_test': self.num_test,
             'training_time': self.training_time,
-            'dimension': self.dimension
+            'total_iterations': self.total_iterations,
+            'history': history,
+            'use_deep_xde': self.use_deep_xde
         }
-        with open(os.path.join(save_dir, str(model_name_str) + "_hyperparameters.json"), 'w') as f:
-            json.dump(hyper_params, f, indent=4)
-        if self.loss_history:
-            with open(os.path.join(save_dir, str(model_name_str) + "_loss_history.pkl"), 'wb') as f:
-                pickle.dump(self.loss_history, f)
-            with open(os.path.join(save_dir, str(model_name_str) + "_train_state.pkl"), 'wb') as f:
-                pickle.dump(self.train_state, f)
+        with open(os.path.join(save_path, "hyperparameters.json"), 'w') as f:
+            #json.dump(self.convert_to_serializable(hyper_params), f, indent=4)
+            json.dump(hyper_params, f, indent=4, default=lambda o: float(o))
+            #json.dump(hyper_params, f, indent=4)
+
+    def convert_to_serializable(obj):
+        if isinstance(obj, dict):
+            return {k: obj.convert_to_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [obj.convert_to_serializable(v) for v in obj]
+        elif isinstance(obj, (np.float32, np.float64)):
+            return float(obj)
+        elif isinstance(obj, (np.int32, np.int64)):
+            return int(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return obj
 
     @staticmethod
     def prepare_save_dir(save_dir):
@@ -402,46 +312,69 @@ class InverseHeatSolver:
             return True
 
     @staticmethod
-    def restore_model_and_params(save_dir, model_name_str, obs_values,
-                                 u_dbc, model_num=None, u_ic=None, u_nbc=None, f_right_side=None, precision=False):
-        with open(os.path.join(save_dir, str(model_name_str) + "_hyperparameters.json"), 'r') as f:
+    def restore_model_and_params(save_dir):
+        with open(os.path.join(save_dir, "hyperparameters.json"), 'r') as f:
             params = json.load(f)
-        domain = params['domain']
+
+        obs_values = {'dom_obs': np.array(params['obs_values']['dom_obs']),
+                      'u_obs': np.array(params['obs_values']['u_obs']),
+                      'f_obs': np.array(params['obs_values']['f_obs'])}
+
+        history = {
+            "u_history": {
+                "loss": params['history']['u_history']['loss'],
+                "steps": params['history']['u_history']['steps']
+            },
+            "f_history": {
+                "loss": params['history']['f_history']['loss'],
+                "steps": params['history']['f_history']['steps']
+            },
+            "a_history": {
+                "loss": params['history']['a_history']['loss'],
+                "pde_loss": params['history']['a_history']['pde_loss'],
+                "a_grad_loss": params['history']['a_history']['a_grad_loss'],
+                "steps": params['history']['a_history']['steps']
+            }
+        }
+
         heat_solver = InverseHeatSolver(
-            domain=domain,
+            domain=params['domain'],
             nn_dims=params['nn_dims'],
             obs_values=obs_values,
-            u_dbc=u_dbc,
-            u_ic=u_ic,
-            u_nbc=u_nbc,
             loss_weights=params['loss_weights'],
             learning_rate=params['learning_rate'],
-            num_domain=params['num_domain'],
-            num_boundary=params['num_boundary'],
-            num_initial=params['num_initial'],
-            num_test=params['num_test']
+            use_deep_xde=params['use_deep_xde']
         )
-        heat_solver.total_iterations = params['total_iterations']
-        if os.path.exists(os.path.join(save_dir, str(model_name_str) + "_loss_history.pkl")):
-            with open(os.path.join(save_dir, str(model_name_str) + "_loss_history.pkl"), 'rb') as f:
-                heat_solver.loss_history = pickle.load(f)
-            with open(os.path.join(save_dir, str(model_name_str) + "_train_state.pkl"), 'rb') as f:
-                heat_solver.train_state = pickle.load(f)
-        heat_solver.prepare_model()
-        heat_solver.model.compile("adam", lr=heat_solver.learning_rate, loss_weights=list(heat_solver.loss_weights.values()))
-        test_domain = heat_solver.prepare_test_domain()
-        heat_solver.model.predict(test_domain)
-        if model_num is None:
-            model_num = heat_solver.total_iterations
-        heat_solver.model.restore(os.path.join(save_dir, str(model_name_str) + "-" + str(model_num) + ".weights.h5"))
-
         heat_solver.training_time = params['training_time']
-        heat_solver.dimension = params['dimension']
-        heat_solver.u_model = Interpolator(heat_solver.dimension)
-        heat_solver.u_model.model.load_weights(os.path.join(save_dir, "u_model.weights.h5"))
-        heat_solver.f_model = Interpolator(heat_solver.dimension, positive_output=True)
-        heat_solver.f_model.model.load_weights(os.path.join(save_dir, "f_model.weights.h5"))
-        heat_solver.prepare_model(heat_solver.u_model, heat_solver.f_model, dummy_init=True)
+        heat_solver.total_iterations = params['total_iterations']
+        heat_solver.history = history
+
+        heat_solver.u_model = Interpolator(heat_solver.dimension, lr=heat_solver.learning_rate)
+        heat_solver.u_model.restore(save_dir, "u_model.weights.h5")
+        #heat_solver.u_model.model.load_weights(os.path.join(save_dir, "u_model.weights.h5"))
+
+        heat_solver.f_model = Interpolator(heat_solver.dimension, lr=heat_solver.learning_rate, positive_output=True)
+        heat_solver.f_model.restore(save_dir, "f_model.weights.h5")
+        #heat_solver.f_model.model.load_weights(os.path.join(save_dir, "f_model.weights.h5"))
+
+        if heat_solver.use_deep_xde:
+            heat_solver.a_model = PdeMinimizerDeepXde(heat_solver.domain, heat_solver.prepare_train_domain(),
+                                                      u_model=heat_solver.u_model, f_model=heat_solver.f_model,
+                                                      input_dim=heat_solver.dimension, nn_dims=heat_solver.nn_dims,
+                                                      lr=heat_solver.learning_rate,
+                                                      time_dependent=heat_solver.time_dependent,
+                                                      two_dim=heat_solver.two_dim)
+        else:
+            if heat_solver.time_dependent:
+                dim = heat_solver.dimension - 1
+            else:
+                dim = heat_solver.dimension
+            heat_solver.a_model = PdeMinimizer(u_model=heat_solver.u_model, f_model=heat_solver.f_model,
+                                               input_dim=dim, nn_dims=heat_solver.nn_dims,
+                                               lr=heat_solver.learning_rate, time_dependent=heat_solver.time_dependent,
+                                               two_dim=heat_solver.two_dim)
+        heat_solver.a_model.restore(save_dir, "a_model.weights.h5")
+        #heat_solver.a_model.a_model.load_weights(os.path.join(save_dir, "a_model.weights.h5"))
 
         return heat_solver
 
@@ -449,27 +382,4 @@ class InverseHeatSolver:
     def print_l2_error(exact_values, pred_values, exact_name, pred_name):
         diff = (exact_values[:, 0] - pred_values)
         print(f"l2 error for '{exact_name}' to '{pred_name}' : {np.sqrt(np.sum(diff ** 2))/diff.shape[0]:.4e}")
-
-
-class CompositeModel(tf.keras.Model):
-    def __init__(self, a_net, time_dependent=False, two_dim=False):
-        super().__init__()
-        self.time_dependent = time_dependent
-        self.two_dim = two_dim
-        self.regularizer = None
-        self.a_net = a_net
-
-    def call(self, inputs):
-        if not self.two_dim and not self.time_dependent:
-            a = self.a_net(inputs)
-        elif not self.two_dim and self.time_dependent:
-            x = inputs[:, :1]
-            a = self.a_net(x)
-        elif self.two_dim and not self.time_dependent:
-            a = self.a_net(inputs)
-        else:
-            xy = inputs[:, :2]
-            a = self.a_net(xy)
-
-        return a
 

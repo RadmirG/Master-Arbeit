@@ -78,7 +78,7 @@ class PdeMinimizer(tf.keras.Model):
 
         return output
 
-    def train(self, obs_domain, loss_weights, iterations=5000, print_every=100, regularize=False):
+    def train(self, obs_domain, loss_weights, iterations=5000, print_every=100, regularize=False, best_loss=1e-1):
         if not isinstance(obs_domain, np.ndarray):
             raise TypeError("x_obs must be a NumPy array.")
         train_domain = tf.convert_to_tensor(obs_domain, dtype=tf.float32)
@@ -86,7 +86,6 @@ class PdeMinimizer(tf.keras.Model):
         best_losses = []
         best_weights = []
         best_steps = []
-        best_loss = 1e-2
 
         for iteration in range(iterations):
             with tf.GradientTape(persistent=True) as tape:

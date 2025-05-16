@@ -1,5 +1,5 @@
 # ======================================================================================================================
-# A Docker Container to execute FEniCS python library for solwing PDE with FEM methods.
+# A Docker Container to execute FEniCS python library to solve PDE with FEM methods.
 # FEniCS execution is possible only under Linux derivatives. The current container 
 # gives all the possibilities to run a python file, which is using FEniCS under Windows.
 # ======================================================================================================================
@@ -14,8 +14,8 @@ FROM quay.io/fenicsproject/stable:current
 WORKDIR /app
 
 # Copy the Python file into the container
-COPY FEniCS_forward_heat_equa_1D.py /app/
-COPY FEniCS_forward_heat_equa_2D.py /app/
+COPY FEniCS_1D_ti.py /app/
+COPY FEniCS_2D_td.py /app/
 
 # Update pip to the latest version
 RUN pip3 install --no-cache-dir --upgrade pip

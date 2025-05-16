@@ -22,7 +22,7 @@ class Interpolator(tf.keras.Model):
     def call(self, x):
         return self.model(x)
 
-    def fit(self, x_obs, y_obs, iterations=5000, print_every=100):
+    def fit(self, x_obs, y_obs, iterations=5000, print_every=100, best_loss=1e-2):
         # inputs are allways numpy vectors
         if not isinstance(x_obs, np.ndarray) or not isinstance(y_obs, np.ndarray):
             raise TypeError("Inputs x_obs and y_obs must be NumPy arrays.")
@@ -36,7 +36,6 @@ class Interpolator(tf.keras.Model):
         best_losses = []
         best_weights = []
         best_steps = []
-        best_loss = 1e-2
 
         for iteration in range(iterations):
             with tf.GradientTape() as tape:
