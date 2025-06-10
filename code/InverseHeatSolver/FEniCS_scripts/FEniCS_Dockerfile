@@ -1,0 +1,37 @@
+# ======================================================================================================================
+# A Docker Container to execute FEniCS python library to solve PDE with FEM methods.
+# FEniCS execution is possible only under Linux derivatives. The current container 
+# gives all the possibilities to run a python file, which is using FEniCS under Windows.
+# ======================================================================================================================
+# Radmir Gesler, 2024, master thesis at BHT Berlin by Prof. Dr. Frank Haußer
+# ======================================================================================================================
+
+# official Ubuntu 22.04 base image
+FROM ubuntu:22.04
+
+# Update package index, install wget, bzip2 and Miniconda
+RUN apt-get update && \
+    apt-get install -y wget bzip2 && \
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
+    bash miniconda.sh -b -p /opt/conda && \
+    rm miniconda.sh
+
+# Miniconda to the PATH environment
+ENV PATH="/opt/conda/bin:$PATH"
+
+# Conda to install FEniCS and scientific Python libs
+RUN conda install -c conda-forge fenics matplotlib numpy scipy plotly
+
+# Container working directory
+WORKDIR /app
+
+# ======================================================================================================================
+# OPTIONAL: copy scripts and run them directly after container starts
+# ======================================================================================================================
+# COPY FEniCS_scripts/FEniCS_1D_ti.py /app/
+# COPY FEniCS_scripts/FEniCS_2D_td.py /app/
+# COPY FEniCS_scripts/test_cases_FEniCS.py /app/
+#
+# CMD ["python", "/app/FEniCS_1D_ti.py"]
+# CMD ["python", "/app/FEniCS_2D_td.py"]
+# CMD ["python", "/app/test_cases_FEniCS.py"]

@@ -1,7 +1,8 @@
-Code/DeapXDE_heat_equa/.venv
+Code/InverseHeatSolver/.venv
 
-MA_latex
-tmp
+Antrag/*
+MA_latex/*
+tmp/*
 
 *.aux
 *.bcf

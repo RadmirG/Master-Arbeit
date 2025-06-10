@@ -2,8 +2,8 @@ import numpy as np
 
 # --------------------------------------------------------------------------------------------------------------
 # local packages
-from InverseHeatSolver.InverseHeatSolver import InverseHeatSolver
-from InverseHeatSolver import Visualizer
+from solver.InverseHeatSolver import InverseHeatSolver
+from solver import Visualizer
 import functions # Defines all used functions
 
 # --------------------------------------------------------------------------------------------------------------
@@ -220,9 +220,9 @@ if __name__ == "__main__":
         a_exact = functions.a_2D_ti(XY).reshape(X_test.shape)
         f_exact = functions.f_2D_ti(XY).reshape(X_test.shape)
 
-        inv_solver.print_l2_error(u_exact, outputs[0], "u_exact", "u_pred")
-        inv_solver.print_l2_error(a_exact, outputs[2], "a_exact", "a_pred")
-        inv_solver.print_l2_error(f_exact, outputs[1], "f_exact", "f_pred")
+        inv_solver.print_l2_error(u_exact, outputs[0].reshape(X_test.shape), "u_exact", "u_pred")
+        inv_solver.print_l2_error(a_exact, outputs[2].reshape(X_test.shape), "a_exact", "a_pred")
+        inv_solver.print_l2_error(f_exact, outputs[1].reshape(X_test.shape), "f_exact", "f_pred")
         print(inv_solver.format_training_time())
 
         Visualizer.plot_3d(X_test, Y_test, u_pred, f_pred, a_pred, is_time_plot=False)

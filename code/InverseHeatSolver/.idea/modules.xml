@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/DeapXDE_heat_equa.iml" filepath="$PROJECT_DIR$/.idea/DeapXDE_heat_equa.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/InverseHeatSolver.iml" filepath="$PROJECT_DIR$/.idea/InverseHeatSolver.iml" />
     </modules>
   </component>
 </project>

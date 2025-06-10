@@ -2,8 +2,8 @@ import numpy as np
 
 # --------------------------------------------------------------------------------------------------------------
 # local packages
-from InverseHeatSolver.InverseHeatSolver import InverseHeatSolver
-from InverseHeatSolver import Visualizer
+from solver.InverseHeatSolver import InverseHeatSolver
+from solver import Visualizer
 import functions # Defines all used functions
 
 # --------------------------------------------------------------------------------------------------------------
@@ -14,9 +14,9 @@ np.random.seed(seed)
 # ======================================================================================================================
 # Main script
 if __name__ == "__main__":
-    case_1 = True  # 1D, time independent
-    case_2 = True  # 1D, time dependent
-    case_3 = True  # 2D, time independent
+    case_1 = False  # 1D, time independent
+    case_2 = False  # 1D, time dependent
+    case_3 = False  # 2D, time independent
     case_4 = True  # 2D, time dependent
 
     # ==================================================================================================================
@@ -57,14 +57,15 @@ if __name__ == "__main__":
             inv_solver.train(a_iterations=5000, u_iterations=10000, f_iterations=15000,
                              display_results_every=500, save_path="models/1D_ti_dde")
 
+        import matplotlib
+        matplotlib.use('TkAgg')
+
         loss_labels = [
             r"$L_{PDE}$",
             # r"$L_{|\nabla a|}$"
         ]
         Visualizer.plot_losses(inv_solver.history)
 
-        #import matplotlib
-        #matplotlib.use('TkAgg')
 
         num_test_points = 1000
         x_test = np.linspace(0, 1, num_test_points).reshape(num_test_points, 1)
@@ -129,6 +130,10 @@ if __name__ == "__main__":
             r"$L_{PDE}$",
             # r"$L_{|\nabla a|}$"
         ]
+
+        import matplotlib
+        matplotlib.use('TkAgg')
+
         Visualizer.plot_losses(inv_solver.history)
 
         sizeof_t = 100
@@ -149,14 +154,11 @@ if __name__ == "__main__":
         f_exact = functions.f_1D_td(XT)
 
         inv_solver.print_l2_error(u_exact, outputs[0], "u_exact", "u_pred")
-        inv_solver.print_l2_error(a_exact, outputs[2], "a_exact", "a_pred")
-        inv_solver.print_l2_error(f_exact, outputs[1], "f_exact", "f_pred")
+        inv_solver.print_l2_error(a_exact, outputs[1], "a_exact", "a_pred")
+        inv_solver.print_l2_error(f_exact, outputs[2], "f_exact", "f_pred")
         print(inv_solver.format_training_time())
 
         Visualizer.plot_3d(X_test, T_test, u_pred, f_pred, a_pred, is_time_plot=True)
-
-        # import matplotlib
-        # matplotlib.use('TkAgg')
         Visualizer.time_plot(X, range_t, sizeof_t, u_pred, f_pred, a_pred,
                              functions.u_1D_td, functions.f_1D_td, functions.a_1D_td)
 
@@ -203,6 +205,10 @@ if __name__ == "__main__":
             r"$L_{PDE}$",
             # r"$L_{|\nabla a|}$"
         ]
+
+        import matplotlib
+        matplotlib.use('TkAgg')
+
         Visualizer.plot_losses(inv_solver.history)
 
         X = np.linspace(0, 1, 100)
@@ -220,15 +226,12 @@ if __name__ == "__main__":
         a_exact = functions.a_2D_ti(XY).reshape(X_test.shape)
         f_exact = functions.f_2D_ti(XY).reshape(X_test.shape)
 
-        inv_solver.print_l2_error(u_exact, outputs[0], "u_exact", "u_pred")
-        inv_solver.print_l2_error(a_exact, outputs[2], "a_exact", "a_pred")
-        inv_solver.print_l2_error(f_exact, outputs[1], "f_exact", "f_pred")
+        inv_solver.print_l2_error(u_exact, u_pred, "u_exact", "u_pred")
+        inv_solver.print_l2_error(a_exact, f_pred, "a_exact", "a_pred")
+        inv_solver.print_l2_error(f_exact, a_pred, "f_exact", "f_pred")
         print(inv_solver.format_training_time())
 
         Visualizer.plot_3d(X_test, Y_test, u_pred, f_pred, a_pred, is_time_plot=False)
-
-        # import matplotlib
-        # matplotlib.use('TkAgg')
         Visualizer.time_plot(X, 1, 100, u_pred, f_pred, a_pred,
                              functions.u_2D_ti, functions.f_2D_ti, functions.a_2D_ti)
 
@@ -273,6 +276,10 @@ if __name__ == "__main__":
             r"$L_{PDE}$",
             # r"$L_{|\nabla a|}$"
         ]
+
+        import matplotlib
+        matplotlib.use('TkAgg')
+
         Visualizer.plot_losses(inv_solver.history)
 
         x_num = 100
@@ -301,7 +308,4 @@ if __name__ == "__main__":
 
         x_mesh, y_mesh = np.meshgrid(X, Y)
         Visualizer.plot_3d(x_mesh, y_mesh, u_pred[:, :, 0], f_pred[:, :, 0], a_pred[:, :, 0])
-
-        import matplotlib
-        matplotlib.use('TkAgg')
         Visualizer.animation_3d(x_mesh, y_mesh, T, 6, u_pred, f_pred)
