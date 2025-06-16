@@ -17,11 +17,12 @@
 #                               L = (1/N ∑ ∣r∣^2) + λR(a),
 # where:
 #     r is the residual over all datapoints (x_i, t_i)
-#     R(a) is a regularization term on a(x,y), not implemented in this version
+#     R(a) is a regularization term on a(x,y) (not implemented in this version)
 #     λ is the regularization weight.
 # ======================================================================================================================
 # Radmir Gesler, 2024, master thesis at BHT Berlin by Prof. Dr. Frank Haußer
 # ======================================================================================================================
+
 import json
 import os
 import shutil
@@ -29,18 +30,9 @@ import time
 
 import numpy as np
 
-
 from .Interpolator import Interpolator
 from .PdeMinimizer import PdeMinimizer
 from .PdeMinimizerDeepXde import PdeMinimizerDeepXde
-
-
-# tf.config.threading.set_intra_op_parallelism_threads(4)
-# tf.config.threading.set_inter_op_parallelism_threads(2)
-#
-# seed = 42  # Can be any integer seed
-# np.random.seed(seed)
-# tf.random.set_seed(seed)
 
 # ======================================================================================================================
 # ASSUMED STRUCTURE OF INITIALIZATION VARIABLES
@@ -137,13 +129,15 @@ class InverseHeatSolver:
 # model section
 
     def train(self, a_iterations=10000, u_iterations=5000, f_iterations=5000, display_results_every=100,
+              use_regularization=False, use_gPINN=False, use_RAR=False, RAR_cycles_n=0, RAR_points_m=0,
               save_path="callbacks"):
         self.prepare_save_dir(save_path)
         start_time = time.time()
         # First stage: interpolates u and f on measured data
         u_history, f_history = self.learn_u_and_f(u_iterations, f_iterations, display_results_every)
         # Second stage: learning a
-        a_history = self.learn_a(a_iterations, display_results_every)
+        a_history = self.learn_a(a_iterations, display_results_every, use_regularization, use_gPINN, use_RAR,
+                                 RAR_cycles_n, RAR_points_m)
 
         self.total_iterations = a_history.steps
         self.training_time = time.time() - start_time
@@ -166,21 +160,23 @@ class InverseHeatSolver:
                 "loss": a_history.losses['loss'],
                 "pde_loss": a_history.losses['pde_loss'],
                 "a_grad_loss": a_history.losses['a_grad_loss'],
+                "gPINN_loss": a_history.losses['gPINN_loss'],
                 "steps": a_history.steps
             }
         }
 
-    def learn_a(self, a_iterations, display_results_every):
+    def learn_a(self, a_iterations, display_results_every, use_regularization=False, use_gPINN=False, use_RAR=False,
+                RAR_cycles_n=0, RAR_points_m=0):
         print('#####################################################')
         print('# Starts to learn a(.) ...                          #')
         print('#####################################################')
-        if self.use_deep_xde:
-            self.a_model = PdeMinimizerDeepXde(self.domain, self.prepare_train_domain(), u_model=self.u_model,
+        if self.use_deep_xde:                               # Fehler: müsste obs_domain rein anstatt self.prepare_train_domain()
+            self.a_model = PdeMinimizerDeepXde(self.domain, self.observed_domain, # self.prepare_train_domain(),
+                                               u_model=self.u_model,
                                                f_model=self.f_model, input_dim=self.dimension,
                                                nn_dims=self.nn_dims, lr=self.learning_rate,
                                                time_dependent=self.time_dependent, two_dim=self.two_dim)
-            a_history = self.a_model.train(self.loss_weights, a_iterations, print_every=display_results_every,
-                                           early_stop=1e-6)
+            a_history = self.a_model.train(self.loss_weights, a_iterations, print_every=display_results_every) #, early_stop=1e-6)
         else:
             if self.time_dependent:
                 dim = self.dimension - 1
@@ -190,7 +186,9 @@ class InverseHeatSolver:
                                         nn_dims=self.nn_dims, lr=self.learning_rate, time_dependent=self.time_dependent,
                                         two_dim=self.two_dim)
             a_history = self.a_model.train(self.prepare_train_domain(), self.loss_weights, a_iterations,
-                                           print_every=display_results_every)
+                                           print_every=display_results_every,
+                                           use_regularization=use_regularization, use_gPINN=use_gPINN, use_RAR=use_RAR,
+                                           RAR_cycles_n=RAR_cycles_n, RAR_points_m=RAR_points_m)
         return a_history
 
     def learn_u_and_f(self, u_iterations, f_iterations, display_results_every):
@@ -199,7 +197,8 @@ class InverseHeatSolver:
         print('#####################################################')
         self.u_model = Interpolator(self.dimension, lr=self.learning_rate)
         u_loss, u_steps = self.u_model.fit(self.observed_domain, self.u_obs, iterations=u_iterations,
-                                           print_every=display_results_every)
+                                           print_every=display_results_every,
+                                           best_loss=1e-2, reg_weight=1e-3)
         f_loss = None
         f_steps = None
         if self.f_obs is not None:
@@ -209,7 +208,8 @@ class InverseHeatSolver:
             # Assumes that the source should always be a positive value
             self.f_model = Interpolator(self.dimension, lr=self.learning_rate, positive_output=True)
             f_loss, f_steps = self.f_model.fit(self.observed_domain, self.f_obs, iterations=f_iterations,
-                                               print_every=display_results_every)
+                                               print_every=display_results_every,
+                                               best_loss=1e-2, reg_weight=1e-3)
         return [u_loss, u_steps], [f_loss, f_steps]
 
     def predict(self, inp):
@@ -381,6 +381,6 @@ class InverseHeatSolver:
     @staticmethod
     def print_l2_error(exact_values, pred_values, exact_name, pred_name):
         # diff = (exact_values[:, 0] - pred_values)
-        diff = (exact_values - pred_values)
+        diff = np.abs(exact_values - pred_values)
         print(f"l2 error for '{exact_name}' to '{pred_name}' : {np.sqrt(np.sum(diff ** 2))/diff.shape[0]:.4e}")
 

@@ -2,6 +2,12 @@ import os
 import numpy as np
 import tensorflow as tf
 
+tf.config.threading.set_intra_op_parallelism_threads(4)
+tf.config.threading.set_inter_op_parallelism_threads(2)
+
+# seed = 42  # Can be any integer seed
+# np.random.seed(seed)
+# tf.random.set_seed(seed)
 
 class Interpolator(tf.keras.Model):
     def __init__(self, input_dim, hidden_units=20, lr=0.01, positive_output=False):
@@ -22,7 +28,7 @@ class Interpolator(tf.keras.Model):
     def call(self, x):
         return self.model(x)
 
-    def fit(self, x_obs, y_obs, iterations=5000, print_every=100, best_loss=1e-2):
+    def fit(self, x_obs, y_obs, iterations=5000, print_every=100, best_loss=1e-2, reg_weight=0.0):
         # inputs are allways numpy vectors
         if not isinstance(x_obs, np.ndarray) or not isinstance(y_obs, np.ndarray):
             raise TypeError("Inputs x_obs and y_obs must be NumPy arrays.")
@@ -39,8 +45,13 @@ class Interpolator(tf.keras.Model):
 
         for iteration in range(iterations):
             with tf.GradientTape() as tape:
+                #tape.watch(x_train)
                 y_pred = self(x_train)
                 loss = self.loss_fn(y_train, y_pred)
+                #if reg_weight > 0.0:
+                #    grad = tape.gradient(y_pred, x_train)
+                #    grad_norm2 = tf.reduce_mean(tf.square(grad))
+                #    loss += reg_weight * grad_norm2
             gradients = tape.gradient(loss, self.trainable_variables)
             self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 

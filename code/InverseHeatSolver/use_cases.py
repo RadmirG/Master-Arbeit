@@ -15,9 +15,9 @@ np.random.seed(seed)
 # Main script
 if __name__ == "__main__":
     case_1 = True    # 1D, time independent
-    case_2 = True    # 1D, time dependent
-    case_3 = True     # 2D, time independent
-    case_4 = True    # 2D, time dependent
+    case_2 = False   # 1D, time dependent
+    case_3 = False   # 2D, time independent
+    case_4 = False    # 2D, time dependent
 
     # ==================================================================================================================
     # USE CASE 1.
@@ -34,28 +34,30 @@ if __name__ == "__main__":
         # --------------------------------------------------------------------------------------------------------------
         # Solver parameters
 
-        domain = {'x_domain': [0, 1, 10000], 'y_domain': None, 't_domain': None}
-        nn_dims = {'num_layers': 3, 'num_neurons': 40}
+        domain = {'x_domain': [0, 1, 1000], 'y_domain': None, 't_domain': None}
+        nn_dims = {'num_layers': 2, 'num_neurons': 10}
         obs_values = {'dom_obs': obs_dom,
                       'u_obs': u_obs,
                       'f_obs': f_obs}
         loss_weights = {'w_PDE_loss': 1/5,
-                        'a_grad_loss' : 0
+                        'a_grad_loss' : 1/5,
+                        'gPINN_loss' : 1/5
                         }
         learning_rate = 1e-2
 
         # --------------------------------------------------------------------------------------------------------------
         # Evaluate solver
 
-        use_solved_model = True
+        use_solved_model = False
         inv_solver = None
 
         if use_solved_model:
-            inv_solver = InverseHeatSolver.restore_model_and_params("models/1D_ti")
+            inv_solver = InverseHeatSolver.restore_model_and_params("models/1D_ti_gPINN_RAR")
         else:
             inv_solver = InverseHeatSolver(domain, nn_dims, obs_values, loss_weights, learning_rate)
-            inv_solver.train(a_iterations=10000, u_iterations=10000, f_iterations=15000,
-                             display_results_every=500, save_path="models/1D_ti")
+            inv_solver.train(a_iterations=10000, u_iterations=5000, f_iterations=10000, display_results_every=500,
+                             use_regularization=False, use_gPINN=True, use_RAR=True, RAR_cycles_n=500, RAR_points_m=1000,
+                             save_path="models/1D_ti_gPINN_RAR")
 
         loss_labels = [
             r"$L_{PDE}$",
@@ -281,6 +283,10 @@ if __name__ == "__main__":
         X = np.linspace(0, 1, x_num)
         Y = np.linspace(0, 1, y_num)
         T = np.linspace(0, 6, t_num)
+
+        X_test_2D, Y_test_2D = np.meshgrid(X, Y)
+        XY = np.column_stack((X_test_2D.flatten(), Y_test_2D.flatten()))
+
         X_test, Y_test, T_test = np.meshgrid(X, Y, T)
         XYT = np.column_stack((X_test.flatten(), Y_test.flatten(), T_test.flatten()))
         outputs = inv_solver.predict(XYT)
@@ -291,11 +297,13 @@ if __name__ == "__main__":
 
         # exact functions
         u_exact = functions.u_2D_td(XYT).reshape(x_num, y_num, t_num)
-        a_exact = functions.a_2D_td(XYT).reshape(x_num, y_num, t_num)
+        #a_exact = functions.a_2D_td(XYT).reshape(x_num, y_num, t_num)
+        a_exact = functions.a_2D_td(XY).reshape(x_num, y_num)
         f_exact = functions.f_2D_td(XYT).reshape(x_num, y_num, t_num)
 
         inv_solver.print_l2_error(u_exact, u_pred, "u_exact", "u_pred")
         inv_solver.print_l2_error(a_exact, a_pred, "a_exact", "a_pred")
+        inv_solver.print_l2_error(a_exact, a_pred[:, :, 0], "a_exact", "a_pred")
         inv_solver.print_l2_error(f_exact, f_pred, "f_exact", "f_pred")
         print(inv_solver.format_training_time())
 

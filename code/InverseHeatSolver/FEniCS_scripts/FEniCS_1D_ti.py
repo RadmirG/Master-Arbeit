@@ -24,9 +24,10 @@ import time
 import numpy as np
 from fenics import *
 
-from FEniCS_scripts.ForwardHeatSolver import ForwardHeatSolver
-from solver import Visualizer
+from ForwardHeatSolver import ForwardHeatSolver
+
 import functions # Defines all used functions
+from solver import Visualizer
 
 
 def u_bc(x):

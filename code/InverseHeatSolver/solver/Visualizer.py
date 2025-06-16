@@ -70,7 +70,9 @@ def plot_losses(loss_history): # , loss_labels=None):
         if "a_grad_loss" in a_hist and len(a_hist["a_grad_loss"]) > 0:
             plt.semilogy(steps, a_hist["a_grad_loss"],
                          label=a_hist["label_a_grad_loss"] if "label_a_grad_loss" in a_hist else r"$L_{|\nabla a|}$")
-        plt.title(a_hist["title"] if "title" in a_hist else r"$\mathcal{L}_{PDE}$")
+        if "gPINN_loss" in a_hist and len(a_hist["gPINN_loss"]) > 0:
+            plt.semilogy(steps, a_hist["gPINN_loss"], label=r"$\mathcal{L}_{gPINN}$")
+        plt.title(a_hist["title"] if "title" in a_hist else r"$\mathcal{L}_{PINN}$")
         plt.xlabel("Iterations")
         # plt.ylabel(r"$\mathcal{L}$")
         plt.grid()
@@ -209,6 +211,32 @@ def plot_3d(x, y, u_pred, f_pred, a_pred, is_time_plot=False):
 
     plt.tight_layout()
     plt.show()
+
+    # fig = plt.figure(figsize=(12, 5))
+    # gs = gridspec.GridSpec(1, 2)
+    # # Ensure arrays are compatible for plotting
+    # if f_pred.ndim == 1:
+    #     f_pred = f_pred.reshape(x.shape)
+    # if u_pred.shape != x.shape:
+    #     try:
+    #         u_pred = u_pred.reshape(x.shape)
+    #     except ValueError:
+    #         print(f"Error: Cannot reshape u_pred {u_pred.shape} to match x {x.shape}")
+    #         return
+    # # Plot u(x, t)
+    # ax1 = fig.add_subplot(gs[0, 0], projection='3d')
+    # ax1.plot_surface(x, y, u_pred, cmap='viridis')
+    # ax1.set_xlabel(r"$x$")
+    # ax1.set_title(r"$u(x,t)$" if is_time_plot else r"$u(x,y)$")
+    # ax1.set_ylabel(r"$t$" if is_time_plot else r"$y$")
+    # # Plot f(x, t)
+    # ax2 = fig.add_subplot(gs[0, 1], projection='3d')
+    # ax2.plot_surface(x, y, f_pred, cmap='plasma')
+    # ax2.set_xlabel(r"$x$")
+    # ax2.set_title(r"$f(x,t)$" if is_time_plot else r"$f(x,y)$")
+    # ax2.set_ylabel(r"$t$" if is_time_plot else r"$y$")
+    # plt.tight_layout()
+    # plt.show()
 
 
 def time_plot(X, range_t, sizeof_t, u_pred, f_pred=None, a_pred=None, u_exct=None, f_exct=None, a_exct=None):

@@ -26,8 +26,9 @@ import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
 
-import functions
+from ForwardHeatSolver import ForwardHeatSolver
 from solver import Visualizer
+import functions
 
 # ======================================================================================================================
 # DEFINITION OF THE FORWARD PROBLEM AND DOMAIN

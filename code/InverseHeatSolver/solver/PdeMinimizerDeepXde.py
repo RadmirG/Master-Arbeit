@@ -5,7 +5,14 @@ import numpy as np
 import tensorflow as tf
 from matplotlib import pyplot as plt
 
-from .ModelComposer import ModelComposer
+tf.config.threading.set_intra_op_parallelism_threads(4)
+tf.config.threading.set_inter_op_parallelism_threads(2)
+
+seed = 42  # Can be any integer seed
+np.random.seed(seed)
+tf.random.set_seed(seed)
+
+from .InputAdapter import InputAdapter
 from .History import History
 
 
@@ -26,7 +33,6 @@ class PdeMinimizerDeepXde:
         self.obs_domain = obs_domain
         self.prepare_model(obs_domain)
         self.learning_rate = lr
-        self.global_step = tf.Variable(0, trainable=False, dtype=tf.int32)
 
     def prepare_domain(self, domain):
         x_start, x_end = domain['x_domain'][:2]
@@ -56,7 +62,7 @@ class PdeMinimizerDeepXde:
         a_net = dde.nn.FNN([dim]
                            + [self.nn_dims['num_neurons']] * self.nn_dims['num_layers']
                            + [1], "tanh", "Glorot normal")
-        composite_net = ModelComposer(a_net, self.time_dependent, self.two_dim)
+        composite_net = InputAdapter(a_net, self.time_dependent, self.two_dim)
         self.a_model = dde.Model(data, composite_net)
 
     def predict(self, inputs):
@@ -79,9 +85,6 @@ class PdeMinimizerDeepXde:
     def get_network(self):
         return self.a_model.net
 
-    def a_tf(self, x, sigma=0.05, mu=0.5):
-        return 1 + tf.exp(-((x - mu) ** 2 / (2 * sigma ** 2)))
-
     def pde_loss(self, x_in, outputs):
         if self.u_model is not None:
             u = self.u_model(x_in)  # Interpolated u(x)
@@ -94,17 +97,6 @@ class PdeMinimizerDeepXde:
             f = 0.0
 
         a = outputs
-
-        self.global_step.assign_add(1)
-        # ------------------------------------------------------------------------------------------------------------------
-        if tf.equal(self.global_step % 1000, 0):
-            a_true = self.a_tf(x_in)
-            tf.print('=================================================')
-            tf.print("L2 norm distances on ", tf.cast(tf.shape(x_in)[0], tf.float32), " points")
-            tf.print('-------------------------------------------------')
-            tf.print('|a_dde - a_tf|       : ',
-                     tf.sqrt(tf.reduce_sum(tf.square(a - a_true))) / tf.cast(tf.shape(a_true)[0], tf.float32))
-        # ------------------------------------------------------------------------------------------------------------------
 
         if not self.two_dim:
             u_x = dde.grad.jacobian(u, x_in, i=0, j=0)  # ∂u/∂x
@@ -130,7 +122,7 @@ class PdeMinimizerDeepXde:
             res = u_t - (flux_xx + flux_yy) - f
         return res
 
-    def train(self, loss_weights, iterations=5000, print_every=100, early_stop=1e-6):
+    def train(self, loss_weights, iterations=5000, print_every=100): #, early_stop=1e-6):
         pde_resampler = dde.callbacks.PDEPointResampler(period=print_every)
         #early_stopping = dde.callbacks.EarlyStopping(baseline=early_stop, monitor='loss_train', patience=1000)
         callbacks = [pde_resampler]

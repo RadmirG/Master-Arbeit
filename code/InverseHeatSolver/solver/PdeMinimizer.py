@@ -1,10 +1,14 @@
 import os
-
-import tensorflow as tf
 import numpy as np
-
+import tensorflow as tf
 from .History import History
 
+tf.config.threading.set_intra_op_parallelism_threads(4)
+tf.config.threading.set_inter_op_parallelism_threads(2)
+
+# seed = 42  # Can be any integer seed
+# np.random.seed(seed)
+# tf.random.set_seed(seed)
 
 class PdeMinimizer(tf.keras.Model):
     def __init__(self, u_model, f_model=None, input_dim=1,
@@ -16,8 +20,9 @@ class PdeMinimizer(tf.keras.Model):
         self.time_dependent = time_dependent
         self.two_dim = two_dim
         self.history = History()
+        self.rar_points = []  # Stores RAR-added points for later visualization
 
-        # build model
+        # Build model
         self.a_model = tf.keras.Sequential()
         self.a_model.add(tf.keras.Input(shape=(input_dim,)))
         for _ in range(nn_dims['num_layers']):
@@ -26,41 +31,25 @@ class PdeMinimizer(tf.keras.Model):
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
 
     def call(self, inputs):
-        if not self.two_dim and not self.time_dependent:
-            a = self.a_model(inputs)
-        elif not self.two_dim and self.time_dependent:
-            x = inputs[:, :1]
-            a = self.a_model(x)
-        elif self.two_dim and not self.time_dependent:
-            a = self.a_model(inputs)
+        if not self.time_dependent:
+            return self.a_model(inputs)
         else:
-            xy = inputs[:, :2]
-            a = self.a_model(xy)
-        return a
+            return self.a_model(inputs[:, :2] if self.two_dim else inputs[:, :1])
 
     def predict(self, x):
-        x = tf.convert_to_tensor(x, dtype=tf.float32)
-        return self(x).numpy()
+        return self(tf.convert_to_tensor(x, dtype=tf.float32)).numpy()
 
     def get_network(self):
         return self.a_model
 
-    def pde_loss(self, inputs, inv_weight, tape):
+    def pde_residual(self, inputs, tape):
         a = self(inputs)
-
-        if self.u_model is None:
-            raise ValueError("PdeMinimizer::inverse-loss() : u_model must be provided")
         u = self.u_model(inputs)
-        if self.f_model is not None:
-            f = self.f_model(inputs)
-        else:
-            f = 0.0
+        f = self.f_model(inputs) if self.f_model is not None else 0.0
 
-        # === Compute derivatives ===
-        u_t = 0.0
-        flux_yy = 0.0
+        u_t, flux_yy = 0.0, 0.0
         if self.two_dim:
-            grads = tape.gradient(u, inputs)  # <=> (du/dx, du/dy)
+            grads = tape.gradient(u, inputs)
             flux = tape.gradient(a * grads[:, 0:2], inputs)
             flux_xx = flux[:, 0:1]
             flux_yy = flux[:, 1:2]
@@ -73,15 +62,57 @@ class PdeMinimizer(tf.keras.Model):
             if self.time_dependent:
                 u_t = grads[:, 1:2]
 
-        res = u_t - (flux_xx + flux_yy) - f
-        output = inv_weight * tf.reduce_mean(tf.square(res))
+        return u_t - (flux_xx + flux_yy) - f
 
-        return output
+    def pde_loss(self, residual, pde_loss_weight):
+        return pde_loss_weight * tf.reduce_mean(tf.square(residual))
 
-    def train(self, obs_domain, loss_weights, iterations=5000, print_every=100, regularize=False, best_loss=1e-1):
-        if not isinstance(obs_domain, np.ndarray):
+    def a_grad_loss(self, inputs, a_grad_loss_weight, tape):
+        a = self(inputs)
+        if not self.time_dependent:
+            a_grad = tape.gradient(a, inputs)
+        else:
+            a_grad = tape.gradient(a, inputs[:, :2] if self.two_dim else inputs[:, :1])
+        return a_grad_loss_weight * tf.reduce_mean(tf.square(a_grad))
+
+    def gPINN_loss(self, residual, inputs, gPINN_loss_weight, tape):
+        grad_res = tape.gradient(residual, inputs)
+        grad_loss = tf.reduce_mean(tf.square(grad_res))
+        return gPINN_loss_weight * grad_loss
+
+    def compute_losses(self, inputs, loss_weights, tape, use_regularization=False, use_gPINN=False):
+        residual = self.pde_residual(inputs, tape)
+        pde_loss = self.pde_loss(residual, loss_weights['w_PDE_loss'])
+        a_loss = self.a_grad_loss(inputs, loss_weights['a_grad_loss'], tape) if use_regularization else 0.0
+        gpinn_loss = self.gPINN_loss(residual, inputs, loss_weights['gPINN_loss'], tape) if use_gPINN else 0.0
+        total_loss = pde_loss + a_loss + gpinn_loss
+        return total_loss, pde_loss, a_loss, gpinn_loss
+
+    # RAR (Residual-based Adaptive Refinement) with logging of new points
+    def rar(self, train_points, RAR_points_m):
+        num_candidates = int(train_points.shape[0] / 2)
+        random_candidates = np.random.uniform(
+            np.min(train_points, axis=0),
+            np.max(train_points, axis=0),
+            size=(num_candidates, train_points.shape[1])
+        )
+        random_candidates_tf = tf.convert_to_tensor(random_candidates, dtype=tf.float32)
+        with tf.GradientTape(persistent=True) as rar_tape:
+            rar_tape.watch(random_candidates_tf)
+            residual = self.pde_residual(random_candidates_tf, rar_tape)
+        residual_grad = rar_tape.gradient(residual, random_candidates_tf)
+        grad_norm = tf.norm(residual_grad, axis=1)
+        top_m_indices = tf.argsort(grad_norm, direction='DESCENDING')[:RAR_points_m]
+        new_points = tf.gather(random_candidates_tf, top_m_indices).numpy()
+        self.rar_points.append(new_points)
+        updated_train_points = np.concatenate([train_points, new_points], axis=0)
+        return updated_train_points
+
+    def train(self, domain, loss_weights, iterations=5000, print_every=100, best_loss=1e-1,
+              use_regularization=False, use_gPINN=False, use_RAR=False, RAR_cycles_n=0, RAR_points_m=0):
+        if not isinstance(domain, np.ndarray):
             raise TypeError("x_obs must be a NumPy array.")
-        train_domain = tf.convert_to_tensor(obs_domain, dtype=tf.float32)
+        train_domain = tf.convert_to_tensor(domain, dtype=tf.float32)
 
         best_losses = []
         best_weights = []
@@ -90,17 +121,26 @@ class PdeMinimizer(tf.keras.Model):
         for iteration in range(iterations):
             with tf.GradientTape(persistent=True) as tape:
                 tape.watch(train_domain)
-                losses = self.compute_losses(train_domain, loss_weights, tape, regularize)
+                losses = self.compute_losses(train_domain, loss_weights, tape, use_regularization, use_gPINN)
             grads = tape.gradient(losses[0], self.a_model.trainable_variables)
             self.optimizer.apply_gradients(zip(grads, self.a_model.trainable_variables))
+
+            # Residual-based Adaptive Refinement (RAR)
+            if use_RAR and (RAR_cycles_n > 0) and (iteration + 1) % RAR_cycles_n == 0:
+                train_domain = self.rar(train_domain.numpy(), RAR_points_m)
+                train_domain = tf.convert_to_tensor(train_domain, dtype=tf.float32)
 
             if iteration % print_every == 0 or iteration == iterations - 1:
                 self.history.append_loss(losses[0].numpy())
                 self.history.append_pde_loss(losses[1].numpy())
+                if use_regularization:
+                    self.history.append_a_grad_loss(losses[2].numpy())
+                if use_gPINN:
+                    self.history.append_gPINN_loss(losses[3].numpy())
                 self.history.steps.append(iteration + 1)
                 tf.print(f"Step {iteration}: Loss = {losses[0]:.8f}")
 
-            # Logic to hold the best models
+            # Save best weights
             loss_val = losses[0].numpy()
             if loss_val < best_loss:
                 best_loss = loss_val
@@ -110,7 +150,7 @@ class PdeMinimizer(tf.keras.Model):
 
             del tape
 
-        # takes only the best model for saving
+        # Set weights to best found
         if best_losses:
             min_index = np.argmin(best_losses)
             best_step = best_steps[min_index]
@@ -119,15 +159,6 @@ class PdeMinimizer(tf.keras.Model):
             self.a_model.set_weights(best_weights)
 
         return self.history
-
-    def compute_losses(self,train_domain, loss_weights, tape, regularize=False):
-        pde_loss = self.pde_loss(train_domain, loss_weights['w_PDE_loss'], tape)
-        a_grad_loss = tf.zeros_like(pde_loss)
-        if regularize:
-            # a_grad_loss = self.a_loss(train_domain, loss_weights['a_grad_loss'], tape).numpy()
-            None
-        loss = pde_loss + a_grad_loss
-        return loss, pde_loss, a_grad_loss
 
     def save(self, save_dir, name="a_model.weights.h5"):
         if not os.path.exists(save_dir):
