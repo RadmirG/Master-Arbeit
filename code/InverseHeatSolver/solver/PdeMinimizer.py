@@ -89,12 +89,11 @@ class PdeMinimizer(tf.keras.Model):
         return total_loss, pde_loss, a_loss, gpinn_loss
 
     # RAR (Residual-based Adaptive Refinement) with logging of new points
-    def rar(self, train_points, RAR_points_m):
-        num_candidates = int(train_points.shape[0] / 2)
+    def rar(self, train_points, RAR_points_m=100):
         random_candidates = np.random.uniform(
             np.min(train_points, axis=0),
             np.max(train_points, axis=0),
-            size=(num_candidates, train_points.shape[1])
+            size=(train_points.shape[0], train_points.shape[1])
         )
         random_candidates_tf = tf.convert_to_tensor(random_candidates, dtype=tf.float32)
         with tf.GradientTape(persistent=True) as rar_tape:
@@ -108,8 +107,22 @@ class PdeMinimizer(tf.keras.Model):
         updated_train_points = np.concatenate([train_points, new_points], axis=0)
         return updated_train_points
 
+    def resample_train_points(self, train_points):
+        new_point_set = np.random.uniform(np.min(train_points, axis=0), np.max(train_points, axis=0),
+                                          size=(train_points.shape[0], train_points.shape[1]))
+
+        if len(self.rar_points) > 0:
+            rar_points_arr = np.concatenate(self.rar_points, axis=0)
+            updated_points = np.concatenate([new_point_set, rar_points_arr], axis=0)
+        else:
+            updated_points = new_point_set
+        return tf.convert_to_tensor(updated_points, dtype=tf.float32)
+
+        #updated_points = np.concatenate([new_point_set, self.rar_points], axis=0)
+        #return tf.convert_to_tensor(updated_points, dtype=tf.float32)
+
     def train(self, domain, loss_weights, iterations=5000, print_every=100, best_loss=1e-1,
-              use_regularization=False, use_gPINN=False, use_RAR=False, RAR_cycles_n=0, RAR_points_m=0):
+              use_regularization=False, use_gPINN=False, use_RAR=False, RAR_cycles_n=500, RAR_points_m=100):
         if not isinstance(domain, np.ndarray):
             raise TypeError("x_obs must be a NumPy array.")
         train_domain = tf.convert_to_tensor(domain, dtype=tf.float32)
@@ -131,6 +144,9 @@ class PdeMinimizer(tf.keras.Model):
                 train_domain = tf.convert_to_tensor(train_domain, dtype=tf.float32)
 
             if iteration % print_every == 0 or iteration == iterations - 1:
+                # Test
+                train_domain = self.resample_train_points(train_domain.numpy())
+
                 self.history.append_loss(losses[0].numpy())
                 self.history.append_pde_loss(losses[1].numpy())
                 if use_regularization:

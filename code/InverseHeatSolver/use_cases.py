@@ -8,8 +8,8 @@ import functions # Defines all used functions
 
 # --------------------------------------------------------------------------------------------------------------
 
-seed = 42  # Choose any integer seed
-np.random.seed(seed)
+#seed = 42  # Choose any integer seed
+#np.random.seed(seed)
 
 # ======================================================================================================================
 # Main script
@@ -40,8 +40,8 @@ if __name__ == "__main__":
                       'u_obs': u_obs,
                       'f_obs': f_obs}
         loss_weights = {'w_PDE_loss': 1/5,
-                        'a_grad_loss' : 1/5,
-                        'gPINN_loss' : 1/5
+                        'a_grad_loss' : 1e-3,
+                        'gPINN_loss' : 1e-2
                         }
         learning_rate = 1e-2
 
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         else:
             inv_solver = InverseHeatSolver(domain, nn_dims, obs_values, loss_weights, learning_rate)
             inv_solver.train(a_iterations=10000, u_iterations=5000, f_iterations=10000, display_results_every=500,
-                             use_regularization=False, use_gPINN=True, use_RAR=True, RAR_cycles_n=500, RAR_points_m=1000,
+                             use_regularization=False, use_gPINN=True, use_RAR=True, RAR_cycles_n=500, RAR_points_m=100,
                              save_path="models/1D_ti_gPINN_RAR")
 
         loss_labels = [

@@ -74,11 +74,18 @@ from .PdeMinimizerDeepXde import PdeMinimizerDeepXde
 
 
 class InverseHeatSolver:
-    def __init__(self, domain, nn_dims, obs_values, loss_weights, learning_rate, use_deep_xde=False):
+    def __init__(self, domain, nn_dims, obs_values, loss_weights, learning_rate, use_deep_xde=False,
+                 load_prelearned_u_model=False, load_prelearned_a_model=False, load_prelearned_f_model=False):
+        self.is_f_model_saved = False
+        self.is_u_model_saved = False
+
         self.history = None
         self.u_model = None
         self.f_model = None
         self.a_model = None
+        self.load_prelearned_u_model = load_prelearned_u_model
+        self.load_prelearned_a_model = load_prelearned_a_model
+        self.load_prelearned_f_model = load_prelearned_f_model
 
         self.total_iterations = 0
         self.training_time = 0
@@ -129,15 +136,16 @@ class InverseHeatSolver:
 # model section
 
     def train(self, a_iterations=10000, u_iterations=5000, f_iterations=5000, display_results_every=100,
-              use_regularization=False, use_gPINN=False, use_RAR=False, RAR_cycles_n=0, RAR_points_m=0,
+              use_regularization=False, use_gPINN=False, use_RAR=False, RAR_cycles_n=500, RAR_points_m=100,
               save_path="callbacks"):
-        self.prepare_save_dir(save_path)
+        if not (self.load_prelearned_u_model or self.load_prelearned_a_model or self.load_prelearned_f_model):
+            self.prepare_save_dir(save_path)
         start_time = time.time()
         # First stage: interpolates u and f on measured data
-        u_history, f_history = self.learn_u_and_f(u_iterations, f_iterations, display_results_every)
+        u_history, f_history = self.learn_or_load_u_and_f(u_iterations, f_iterations, display_results_every, save_path)
         # Second stage: learning a
         a_history = self.learn_a(a_iterations, display_results_every, use_regularization, use_gPINN, use_RAR,
-                                 RAR_cycles_n, RAR_points_m)
+                                 RAR_cycles_n, RAR_points_m, save_path)
 
         self.total_iterations = a_history.steps
         self.training_time = time.time() - start_time
@@ -166,17 +174,21 @@ class InverseHeatSolver:
         }
 
     def learn_a(self, a_iterations, display_results_every, use_regularization=False, use_gPINN=False, use_RAR=False,
-                RAR_cycles_n=0, RAR_points_m=0):
+                RAR_cycles_n=500, RAR_points_m=100, save_path="callbacks"):
         print('#####################################################')
         print('# Starts to learn a(.) ...                          #')
         print('#####################################################')
-        if self.use_deep_xde:                               # Fehler: müsste obs_domain rein anstatt self.prepare_train_domain()
+        if self.use_deep_xde:
             self.a_model = PdeMinimizerDeepXde(self.domain, self.observed_domain, # self.prepare_train_domain(),
                                                u_model=self.u_model,
                                                f_model=self.f_model, input_dim=self.dimension,
                                                nn_dims=self.nn_dims, lr=self.learning_rate,
                                                time_dependent=self.time_dependent, two_dim=self.two_dim)
-            a_history = self.a_model.train(self.loss_weights, a_iterations, print_every=display_results_every) #, early_stop=1e-6)
+            if self.load_prelearned_a_model:
+                self.a_model.restore(save_path, "a_model.weights.h5")
+            a_history = self.a_model.train(self.loss_weights, a_iterations, print_every=display_results_every,
+                                           use_regularization=use_regularization, use_gPINN=use_gPINN, use_RAR=use_RAR,
+                                           RAR_cycles_n=RAR_cycles_n, RAR_points_m=RAR_points_m)
         else:
             if self.time_dependent:
                 dim = self.dimension - 1
@@ -185,37 +197,58 @@ class InverseHeatSolver:
             self.a_model = PdeMinimizer(u_model=self.u_model, f_model=self.f_model, input_dim=dim,
                                         nn_dims=self.nn_dims, lr=self.learning_rate, time_dependent=self.time_dependent,
                                         two_dim=self.two_dim)
+            if self.load_prelearned_a_model:
+                self.a_model.restore(save_path, "a_model.weights.h5")
             a_history = self.a_model.train(self.prepare_train_domain(), self.loss_weights, a_iterations,
                                            print_every=display_results_every,
                                            use_regularization=use_regularization, use_gPINN=use_gPINN, use_RAR=use_RAR,
                                            RAR_cycles_n=RAR_cycles_n, RAR_points_m=RAR_points_m)
         return a_history
 
-    def learn_u_and_f(self, u_iterations, f_iterations, display_results_every):
+    def learn_or_load_u_and_f(self, u_iterations, f_iterations, display_results_every, save_dir="callbacks"):
         print('#####################################################')
         print('# Starts to learn u(.) from observed u-measurements #')
         print('#####################################################')
-        self.u_model = Interpolator(self.dimension, lr=self.learning_rate)
-        u_loss, u_steps = self.u_model.fit(self.observed_domain, self.u_obs, iterations=u_iterations,
-                                           print_every=display_results_every,
-                                           best_loss=1e-2, reg_weight=1e-3)
+        if self.load_prelearned_u_model:
+            self.u_model = Interpolator(self.dimension, lr=self.learning_rate)
+            self.u_model.restore(save_dir, "u_model.weights.h5")
+            history, _, _ = self.restore_params(save_dir)
+            self.history = history
+            u_loss = self.history['u_history']['loss']
+            u_steps = self.history['u_history']['steps']
+        else:
+            self.u_model = Interpolator(self.dimension, lr=self.learning_rate)
+            u_loss, u_steps = self.u_model.fit(self.observed_domain, self.u_obs, iterations=u_iterations,
+                                               print_every=display_results_every,
+                                               best_loss=1e-2, reg_weight=1e-3)
+            self.u_model.save(save_dir, "u_model.weights.h5")
+            self.is_u_model_saved = True
         f_loss = None
         f_steps = None
         if self.f_obs is not None:
             print('#####################################################')
             print('# Starts to learn f(.) from observed f-measurements #')
             print('#####################################################')
-            # Assumes that the source should always be a positive value
-            self.f_model = Interpolator(self.dimension, lr=self.learning_rate, positive_output=True)
-            f_loss, f_steps = self.f_model.fit(self.observed_domain, self.f_obs, iterations=f_iterations,
-                                               print_every=display_results_every,
-                                               best_loss=1e-2, reg_weight=1e-3)
+            if self.load_prelearned_f_model and os.path.isfile(os.path.join(save_dir, "f_model.weights.h5")):
+                    self.f_model = Interpolator(self.dimension, lr=self.learning_rate, positive_output=True)
+                    self.f_model.restore(save_dir, "f_model.weights.h5")
+                    f_loss = self.history['f_history']['loss']
+                    f_steps = self.history['f_history']['steps']
+            else:
+                # Assumes that the source should always be a positive value
+                self.f_model = Interpolator(self.dimension, lr=self.learning_rate, positive_output=True)
+                f_loss, f_steps = self.f_model.fit(self.observed_domain, self.f_obs, iterations=f_iterations,
+                                                   print_every=display_results_every,
+                                                   best_loss=1e-2, reg_weight=1e-3)
+                self.f_model.save(save_dir, str("f_model.weights.h5"))
+                self.is_f_model_saved = True
+
         return [u_loss, u_steps], [f_loss, f_steps]
 
     def predict(self, inp):
         u = self.u_model.predict(inp)
-        f = self.f_model.predict(inp)
         a = self.a_model.predict(inp)
+        f = self.f_model.predict(inp) if self.f_model is not None else 0
         return [u, f, a]
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -226,7 +259,6 @@ class InverseHeatSolver:
         minutes = int((self.training_time % 3600) // 60)
         seconds = int(self.training_time % 60)
         milliseconds = int((self.training_time % 1) * 1000)
-        # Training time formated as HH:MM:SS.MMM
         return f"Training time: {hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}"
 
     def save_model_and_params(self, save_path, prepare_dir=True):
@@ -234,17 +266,16 @@ class InverseHeatSolver:
             print(f'failed to prepare save dir : {save_path}')
             return
 
-        #self.a_model.a_model.save_weights(os.path.join(save_path, str("a_model.weights.h5")))
         self.a_model.save(save_path, "a_model.weights.h5")
-        self.u_model.save(save_path, "u_model.weights.h5")
-        #self.u_model.model.save_weights(os.path.join(save_path, str("u_model.weights.h5")))
-        if self.f_model is not None:
-            #self.f_model.model.save_weights(os.path.join(save_path, str("f_model.weights.h5")))
+        if self.is_u_model_saved:
+            self.u_model.save(save_path, "u_model.weights.h5")
+        if self.f_model is not None and self.is_f_model_saved:
             self.f_model.save(save_path, str("f_model.weights.h5"))
 
         obs_values = {'dom_obs': self.observed_domain.tolist(),
                       'u_obs': self.u_obs.tolist(),
-                      'f_obs': self.f_obs.tolist()}
+                      'f_obs': self.f_obs.tolist() if self.f_obs is not None else None}
+                      #'f_obs': self.f_obs.tolist() if not None else None}
 
         history = {
             "u_history": {
@@ -313,29 +344,7 @@ class InverseHeatSolver:
 
     @staticmethod
     def restore_model_and_params(save_dir):
-        with open(os.path.join(save_dir, "hyperparameters.json"), 'r') as f:
-            params = json.load(f)
-
-        obs_values = {'dom_obs': np.array(params['obs_values']['dom_obs']),
-                      'u_obs': np.array(params['obs_values']['u_obs']),
-                      'f_obs': np.array(params['obs_values']['f_obs'])}
-
-        history = {
-            "u_history": {
-                "loss": params['history']['u_history']['loss'],
-                "steps": params['history']['u_history']['steps']
-            },
-            "f_history": {
-                "loss": params['history']['f_history']['loss'],
-                "steps": params['history']['f_history']['steps']
-            },
-            "a_history": {
-                "loss": params['history']['a_history']['loss'],
-                "pde_loss": params['history']['a_history']['pde_loss'],
-                "a_grad_loss": params['history']['a_history']['a_grad_loss'],
-                "steps": params['history']['a_history']['steps']
-            }
-        }
+        history, obs_values, params = InverseHeatSolver.restore_params(save_dir)
 
         heat_solver = InverseHeatSolver(
             domain=params['domain'],
@@ -353,10 +362,46 @@ class InverseHeatSolver:
         heat_solver.u_model.restore(save_dir, "u_model.weights.h5")
         #heat_solver.u_model.model.load_weights(os.path.join(save_dir, "u_model.weights.h5"))
 
-        heat_solver.f_model = Interpolator(heat_solver.dimension, lr=heat_solver.learning_rate, positive_output=True)
-        heat_solver.f_model.restore(save_dir, "f_model.weights.h5")
-        #heat_solver.f_model.model.load_weights(os.path.join(save_dir, "f_model.weights.h5"))
+        # Check if the file exists
+        if os.path.isfile(os.path.join(save_dir, "f_model.weights.h5")):
+            heat_solver.f_model = Interpolator(heat_solver.dimension, lr=heat_solver.learning_rate, positive_output=True)
+            heat_solver.f_model.restore(save_dir, "f_model.weights.h5")
+            #heat_solver.f_model.model.load_weights(os.path.join(save_dir, "f_model.weights.h5"))
+        else:
+            heat_solver.f_model = None
 
+        InverseHeatSolver.load_a_model(heat_solver, save_dir)
+        #heat_solver.a_model.a_model.load_weights(os.path.join(save_dir, "a_model.weights.h5"))
+
+        return heat_solver
+
+    @staticmethod
+    def restore_params(save_dir):
+        with open(os.path.join(save_dir, "hyperparameters.json"), 'r') as f:
+            params = json.load(f)
+        obs_values = {'dom_obs': np.array(params['obs_values']['dom_obs']),
+                      'u_obs': np.array(params['obs_values']['u_obs']),
+                      'f_obs': np.array(params['obs_values']['f_obs'])}
+        history = {
+            "u_history": {
+                "loss": params['history']['u_history']['loss'],
+                "steps": params['history']['u_history']['steps']
+            },
+            "f_history": {
+                "loss": params['history']['f_history']['loss'],
+                "steps": params['history']['f_history']['steps']
+            },
+            "a_history": {
+                "loss": params['history']['a_history']['loss'],
+                "pde_loss": params['history']['a_history']['pde_loss'],
+                "a_grad_loss": params['history']['a_history']['a_grad_loss'],
+                "steps": params['history']['a_history']['steps']
+            }
+        }
+        return history, obs_values, params
+
+    @staticmethod
+    def load_a_model(heat_solver, save_dir):
         if heat_solver.use_deep_xde:
             heat_solver.a_model = PdeMinimizerDeepXde(heat_solver.domain, heat_solver.prepare_train_domain(),
                                                       u_model=heat_solver.u_model, f_model=heat_solver.f_model,
@@ -374,9 +419,6 @@ class InverseHeatSolver:
                                                lr=heat_solver.learning_rate, time_dependent=heat_solver.time_dependent,
                                                two_dim=heat_solver.two_dim)
         heat_solver.a_model.restore(save_dir, "a_model.weights.h5")
-        #heat_solver.a_model.a_model.load_weights(os.path.join(save_dir, "a_model.weights.h5"))
-
-        return heat_solver
 
     @staticmethod
     def print_l2_error(exact_values, pred_values, exact_name, pred_name):

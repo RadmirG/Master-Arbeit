@@ -179,7 +179,8 @@ def plot_3d(x, y, u_pred, f_pred, a_pred, is_time_plot=False):
         ax1.set_ylabel(r"$t$")
         # ax1.set_zlabel(r"$u(x,t)$")
     else:
-        ax1.set_title(r"$u(x,y)$")
+        # ax1.set_title(r"$u(x,y)$")
+        ax1.set_title(r"$u(x,y, 0)$")
         ax1.set_ylabel(r"$y$")
         # ax1.set_zlabel(r"$u(x,t)$")
 
@@ -192,7 +193,8 @@ def plot_3d(x, y, u_pred, f_pred, a_pred, is_time_plot=False):
         ax2.set_ylabel(r'$t$')
         # ax2.set_zlabel(r'$f(x,t)$')
     else:
-        ax2.set_title(r"$f(x,y)$")
+        # ax2.set_title(r"$f(x,y)$")
+        ax2.set_title(r"$f(x,y, 0)$")
         ax2.set_ylabel(r'$y$')
         # ax2.set_zlabel(r'$f(x,y)$')
 

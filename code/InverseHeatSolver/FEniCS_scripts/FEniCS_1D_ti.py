@@ -35,7 +35,8 @@ def u_bc(x):
 
 domain_ti = {'x_domain': [0, 1, 1100], 'y_domain': None, 't_domain': None}
 start_time = time.time()
-solver = ForwardHeatSolver(domain_ti, functions.a_1D_ti, functions.f_1D_ti, u_bc)
+solver = ForwardHeatSolver(domain_ti, functions.a_1D_ti, u_bc, f_expr=functions.f_1D_ti)
+#solver = ForwardHeatSolver(domain_ti, functions.a_1D_ti, u_bc)
 u_sol, x_test = solver.solve()
 approximation_time = time.time() - start_time
 diff = (functions.u_1D_ti(x_test).reshape(x_test.shape) - u_sol)
@@ -45,6 +46,8 @@ print(f"Approximation time         : {approximation_time} s")
 # Prepare data for plotting
 a_values = functions.a_1D_ti(x_test)
 f_values = functions.f_1D_ti(x_test)
-u_exact = functions.u_1D_ti(x_test)
+x_obs = np.linspace(0,1,50)
+u_obs = functions.u_1D_ti(x_obs)
 
-Visualizer.plot_1D(x_test, u_sol, x_test, None, None, None, a_values, None, u_exact, f_values, None,  title=r"Approximierte Lösung $u_l(x)$")
+Visualizer.plot_1D(x_test, u_sol, x_obs, None, u_obs, None, a_values,
+                   None, None, f_values, None,  title=r"Approximierte Lösung $u_l(x)$")

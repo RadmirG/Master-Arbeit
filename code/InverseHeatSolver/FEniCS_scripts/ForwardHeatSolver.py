@@ -15,7 +15,7 @@ class PythonFunctionExpression(UserExpression):
 
 
 class ForwardHeatSolver:
-    def __init__(self, domain, a_expr, f_expr, bc, uD=None, uI=None, degree=2):
+    def __init__(self, domain, a_expr, bc, uD=None, f_expr=None, uI=None, degree=2):
         self.f = None
         self.a = None
         #self.mesh_domain = None
@@ -84,7 +84,8 @@ class ForwardHeatSolver:
             self.u_i = interpolate(self.initial_condition, self.V)
 
         self.a = self.wrap_expr(self.a_expr)
-        self.f = self.wrap_expr(self.f_expr)
+        if self.f_expr is not None:
+            self.f = self.wrap_expr(self.f_expr)
 
     def set_conditions_and_coefficients_2D(self):
         self.u_D = Constant(0.0)
@@ -92,7 +93,8 @@ class ForwardHeatSolver:
         self.u_i = interpolate(Constant(0.0), self.V)
 
         self.a = self.wrap_expr(self.a_expr)
-        self.f = self.wrap_expr(self.f_expr)
+        if self.f_expr is not None:
+            self.f = self.wrap_expr(self.f_expr)
 
     def solve(self):
         u = TrialFunction(self.V)
@@ -102,12 +104,18 @@ class ForwardHeatSolver:
 
         snapshots = []
         if not self.is_time_dependent:
-            F = self.a * dot(grad(u), grad(v)) * dx - self.f * v * dx
+            if self.f is not None:
+                F = self.a * dot(grad(u), grad(v)) * dx - self.f * v * dx
+            else:
+                F = self.a * dot(grad(u), grad(v)) * dx
             a_form, L_form = lhs(F), rhs(F)
             solve(a_form == L_form, u_, self.bc)
             snapshots.append(u_.copy(deepcopy=True))
         else:
-            F = ((u - self.u_i) / self.dt) * v * dx + self.a * dot(grad(u), grad(v)) * dx - self.f * v * dx
+            if self.f is not None:
+                F = ((u - self.u_i) / self.dt) * v * dx + self.a * dot(grad(u), grad(v)) * dx - self.f * v * dx
+            else:
+                F = ((u - self.u_i) / self.dt) * v * dx + self.a * dot(grad(u), grad(v)) * dx
             a_form, L_form = lhs(F), rhs(F)
             time = 0.0
 

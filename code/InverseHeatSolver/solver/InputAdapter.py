@@ -13,14 +13,15 @@ class InputAdapter(tf.keras.Model):
     def call(self, inputs):
         #if not self.two_dim and not self.time_dependent:
         if not self.time_dependent:
-            a = self.a_net(inputs)
-        elif not self.two_dim and self.time_dependent:
-            x = inputs[:, :1]
-            a = self.a_net(x)
-        #elif self.two_dim and not self.time_dependent:
-        #    a = self.a_net(inputs)
+            return self.a_net(inputs)
         else:
-            xy = inputs[:, :2]
-            a = self.a_net(xy)
-
-        return a
+            return self.a_net(inputs[:, :2] if self.two_dim else inputs[:, :1])
+        # elif not self.two_dim and self.time_dependent:
+        #     x = inputs[:, :1]
+        #     a = self.a_net(x)
+        # #elif self.two_dim and not self.time_dependent:
+        # #    a = self.a_net(inputs)
+        # else:
+        #     xy = inputs[:, :2]
+        #     a = self.a_net(xy)
+        # return a

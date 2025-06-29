@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras import regularizers
 
 tf.config.threading.set_intra_op_parallelism_threads(4)
 tf.config.threading.set_inter_op_parallelism_threads(2)
@@ -10,13 +11,15 @@ tf.config.threading.set_inter_op_parallelism_threads(2)
 # tf.random.set_seed(seed)
 
 class Interpolator(tf.keras.Model):
-    def __init__(self, input_dim, hidden_units=20, lr=0.01, positive_output=False):
+    def __init__(self, input_dim, hidden_units=20, lr=0.01, positive_output=False, reg_weight=1e-4):
         super().__init__()
+        reg = regularizers.L1L2(l1=reg_weight, l2=reg_weight) if reg_weight > 0 else None
+        # reg = regularizers.L2(reg_weight) if reg_weight > 0 else None
         layers = [
             tf.keras.layers.InputLayer(shape=(input_dim,)),
-            tf.keras.layers.Dense(hidden_units, activation='tanh'),
-            tf.keras.layers.Dense(hidden_units, activation='tanh'),
-            tf.keras.layers.Dense(1)
+            tf.keras.layers.Dense(hidden_units, activation='tanh', kernel_regularizer=reg),
+            tf.keras.layers.Dense(hidden_units, activation='tanh', kernel_regularizer=reg),
+            tf.keras.layers.Dense(1, kernel_regularizer=reg)
         ]
         if positive_output:
             layers.append(tf.keras.layers.Activation('softplus'))
@@ -24,6 +27,7 @@ class Interpolator(tf.keras.Model):
         self.model = tf.keras.Sequential(layers)
         self.loss_fn = tf.keras.losses.MeanSquaredError()
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
+
 
     def call(self, x):
         return self.model(x)
