@@ -1,3 +1,10 @@
+# ======================================================================================================================
+# This class handles the second step of training without using DeepXDE
+#   2. Depending on the chosen solver (PdeMinimizer or PdeMinimizerDeepXde) the minimization of L will be solved.
+# ======================================================================================================================
+# Radmir Gesler, 2024, master thesis at BHT Berlin by Prof. Dr. Frank Haußer
+# ======================================================================================================================
+
 import os
 import numpy as np
 import tensorflow as tf
@@ -5,10 +12,6 @@ from .History import History
 
 tf.config.threading.set_intra_op_parallelism_threads(4)
 tf.config.threading.set_inter_op_parallelism_threads(2)
-
-# seed = 42  # Can be any integer seed
-# np.random.seed(seed)
-# tf.random.set_seed(seed)
 
 class PdeMinimizer(tf.keras.Model):
     def __init__(self, u_model, f_model=None, input_dim=1,
@@ -45,9 +48,9 @@ class PdeMinimizer(tf.keras.Model):
     def pde_residual(self, inputs, tape):
         a = self(inputs)
         u = self.u_model(inputs)
-        f = self.f_model(inputs) if self.f_model is not None else 0.0
+        f = self.f_model(inputs) if self.f_model is not None else tf.zeros_like(u)
 
-        u_t, flux_yy = 0.0, 0.0
+        u_t, flux_yy = tf.zeros_like(u), tf.zeros_like(u)
         if self.two_dim:
             grads = tape.gradient(u, inputs)
             flux = tape.gradient(a * grads[:, 0:2], inputs)
@@ -117,9 +120,6 @@ class PdeMinimizer(tf.keras.Model):
         else:
             updated_points = new_point_set
         return tf.convert_to_tensor(updated_points, dtype=tf.float32)
-
-        #updated_points = np.concatenate([new_point_set, self.rar_points], axis=0)
-        #return tf.convert_to_tensor(updated_points, dtype=tf.float32)
 
     def train(self, domain, loss_weights, iterations=5000, print_every=100, best_loss=1e-1,
               use_regularization=False, use_gPINN=False, use_RAR=False, RAR_cycles_n=500, RAR_points_m=100):

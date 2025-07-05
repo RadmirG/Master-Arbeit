@@ -1,10 +1,5 @@
 # ======================================================================================================================
-# Solving the forward problem for the heat equation
-#                               ∂u − ∇⋅(a∇u) = f
-# where ∂u time derivative of u(⋅) is, also searched solution for the heat equation. a(⋅) is (known) heat diffusivity,
-# and f(⋅) is some initial system input, also called right side.
-# ----------------------------------------------------------------------------------------------------------------------
-# The current file presents all possible input cases of functions for the above problem. Thus, are analytical continues
+# The current file presents all possible input cases for InverseHeatSolver. Thus, are analytical continues
 # functions for cases like:
 #
 #     1. One dimensional time independent : u(x), f(x) and a(x).
@@ -55,6 +50,14 @@ def f_1D_td(xt, sigma=0.05, mu=0.5):
             (1 / sigma ** 2 * ((1 - 2 * xt[:, 0:1]) * (xt[:, 0:1] - mu)
                                + 2 * sigma ** 2) * np.exp(-((xt[:, 0:1] - mu) ** 2) / (2 * sigma ** 2))
              - xt[:, 0:1] * (1 - xt[:, 0:1]) + 2))
+
+
+def f_1D_td_pulse(xt, sigma=0.14, mu=0.5, t0=0, tau=0.1):
+    x = xt[:, 0:1]
+    t = xt[:, 1:2]
+    spatial_part = np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
+    time_impulse = np.exp(-((t - t0) ** 2) / (2 * tau ** 2))
+    return time_impulse * spatial_part
 
 # ======================================================================================================================
 # USE CASE 3.

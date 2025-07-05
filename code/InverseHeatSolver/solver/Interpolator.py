@@ -1,3 +1,10 @@
+# ======================================================================================================================
+# This class carries about the first stage of training:
+#   1. From observed data for u and f the interpolation will return functions (Interpolator)
+# ======================================================================================================================
+# Radmir Gesler, 2024, master thesis at BHT Berlin by Prof. Dr. Frank Haußer
+# ======================================================================================================================
+
 import os
 import numpy as np
 import tensorflow as tf
@@ -6,28 +13,25 @@ from tensorflow.keras import regularizers
 tf.config.threading.set_intra_op_parallelism_threads(4)
 tf.config.threading.set_inter_op_parallelism_threads(2)
 
-# seed = 42  # Can be any integer seed
-# np.random.seed(seed)
-# tf.random.set_seed(seed)
-
 class Interpolator(tf.keras.Model):
-    def __init__(self, input_dim, hidden_units=20, lr=0.01, positive_output=False, reg_weight=1e-4):
+    def __init__(self, input_dim, nn_dims=None, lr=0.01, positive_output=False, reg_weight=1e-4):
         super().__init__()
         reg = regularizers.L1L2(l1=reg_weight, l2=reg_weight) if reg_weight > 0 else None
-        # reg = regularizers.L2(reg_weight) if reg_weight > 0 else None
-        layers = [
-            tf.keras.layers.InputLayer(shape=(input_dim,)),
-            tf.keras.layers.Dense(hidden_units, activation='tanh', kernel_regularizer=reg),
-            tf.keras.layers.Dense(hidden_units, activation='tanh', kernel_regularizer=reg),
-            tf.keras.layers.Dense(1, kernel_regularizer=reg)
-        ]
+        if nn_dims is None:
+            nn_dims = {'num_layers': 2, 'num_neurons': 20}
+        num_layers = nn_dims['num_layers']
+        num_neurons = nn_dims['num_neurons']
+        layers = [tf.keras.layers.InputLayer(shape=(input_dim,))]
+        for _ in range(num_layers):
+            layers.append(tf.keras.layers.Dense(num_neurons, activation='tanh', kernel_regularizer=reg))
+        layers.append(tf.keras.layers.Dense(1, kernel_regularizer=reg))
+
         if positive_output:
             layers.append(tf.keras.layers.Activation('softplus'))
 
         self.model = tf.keras.Sequential(layers)
         self.loss_fn = tf.keras.losses.MeanSquaredError()
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
-
 
     def call(self, x):
         return self.model(x)
@@ -49,13 +53,8 @@ class Interpolator(tf.keras.Model):
 
         for iteration in range(iterations):
             with tf.GradientTape() as tape:
-                #tape.watch(x_train)
                 y_pred = self(x_train)
                 loss = self.loss_fn(y_train, y_pred)
-                #if reg_weight > 0.0:
-                #    grad = tape.gradient(y_pred, x_train)
-                #    grad_norm2 = tf.reduce_mean(tf.square(grad))
-                #    loss += reg_weight * grad_norm2
             gradients = tape.gradient(loss, self.trainable_variables)
             self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 

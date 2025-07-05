@@ -35,8 +35,8 @@ def u_bc(x):
 
 domain_ti = {'x_domain': [0, 1, 1100], 'y_domain': None, 't_domain': None}
 start_time = time.time()
-solver = ForwardHeatSolver(domain_ti, functions.a_1D_ti, u_bc, f_expr=functions.f_1D_ti)
-#solver = ForwardHeatSolver(domain_ti, functions.a_1D_ti, u_bc)
+#solver = ForwardHeatSolver(domain_ti, functions.a_1D_ti, u_bc, f_expr=functions.f_1D_ti)
+solver = ForwardHeatSolver(domain_ti, functions.a_1D_ti, u_bc)
 u_sol, x_test = solver.solve()
 approximation_time = time.time() - start_time
 diff = (functions.u_1D_ti(x_test).reshape(x_test.shape) - u_sol)

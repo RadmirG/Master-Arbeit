@@ -12,6 +12,7 @@
         "num_layers": 2,
         "num_neurons": 10
     },
+    "same_arch_for_interpolation": false,
     "obs_values": {
         "dom_obs": [
             [

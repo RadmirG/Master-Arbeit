@@ -1,3 +1,10 @@
+# ======================================================================================================================
+# A helper Object for PdeMinimizerDeepXde to map the inputs defined in InverseHeatSolver to the PINN input in case of
+# time dependency.
+# ======================================================================================================================
+# Radmir Gesler, 2024, master thesis at BHT Berlin by Prof. Dr. Frank Haußer
+# ======================================================================================================================
+
 import tensorflow as tf
 import deepxde as dde
 
@@ -11,17 +18,7 @@ class InputAdapter(tf.keras.Model):
         self.a_net = a_net
 
     def call(self, inputs):
-        #if not self.two_dim and not self.time_dependent:
         if not self.time_dependent:
             return self.a_net(inputs)
         else:
             return self.a_net(inputs[:, :2] if self.two_dim else inputs[:, :1])
-        # elif not self.two_dim and self.time_dependent:
-        #     x = inputs[:, :1]
-        #     a = self.a_net(x)
-        # #elif self.two_dim and not self.time_dependent:
-        # #    a = self.a_net(inputs)
-        # else:
-        #     xy = inputs[:, :2]
-        #     a = self.a_net(xy)
-        # return a

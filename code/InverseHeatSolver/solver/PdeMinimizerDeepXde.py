@@ -1,17 +1,19 @@
+# ======================================================================================================================
+# This class handles the second step of training using DeepXDE
+#   2. Depending on the chosen solver (PdeMinimizer or PdeMinimizerDeepXde) the minimization of L will be solved.
+# ======================================================================================================================
+# Radmir Gesler, 2024, master thesis at BHT Berlin by Prof. Dr. Frank Haußer
+# ======================================================================================================================
+
 import os
 
 import deepxde as dde
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import regularizers
-from matplotlib import pyplot as plt
 
 tf.config.threading.set_intra_op_parallelism_threads(4)
 tf.config.threading.set_inter_op_parallelism_threads(2)
-
-# seed = 42
-# np.random.seed(seed)
-# tf.random.set_seed(seed)
 
 from .InputAdapter import InputAdapter
 from .History import History
@@ -85,13 +87,6 @@ class PdeMinimizerDeepXde:
             return self.a_model.predict(inputs)
         else:
             return self.a_model.predict(inputs[:, :2] if self.two_dim else inputs[:, :1])
-        #elif not self.two_dim and self.time_dependent:
-        #    x = inputs[:, :1]
-        #    a = self.a_model.predict(x)
-        #else:
-        #    xy = inputs[:, :2]
-        #    a = self.a_model.predict(xy)
-        # return a
 
     def get_network(self):
         return self.a_model.net
@@ -105,7 +100,7 @@ class PdeMinimizerDeepXde:
         if self.f_model is not None:
             f = self.f_model(x_in)  # Interpolated f(x)
         else:
-            f = 0.0
+            f = tf.zeros_like(u)
 
         a = outputs
 
@@ -132,7 +127,7 @@ class PdeMinimizerDeepXde:
             u_t = dde.grad.jacobian(u, x_in, i=0, j=2)  # ∂u/∂t
             res = u_t - (flux_xx + flux_yy) - f
 
-        a_grad = 0.0
+        a_grad = tf.zeros_like(a)
         if self.use_regularization:
             a_x = dde.grad.jacobian(a, x_in, i=0, j=0)
             a_reg = tf.reduce_mean(tf.square(a_x))
@@ -140,7 +135,7 @@ class PdeMinimizerDeepXde:
                 a_y = dde.grad.jacobian(a, x_in, i=0, j=1)
                 a_reg += tf.reduce_mean(tf.square(a_y))
             a_grad= self.regularization_weight * a_reg
-        gPINN = 0.0
+        gPINN = tf.zeros_like(res)
         if self.use_gPINN:
             res_x = dde.grad.jacobian(res, x_in, i=0, j=0)
             g_loss = tf.reduce_mean(tf.square(res_x))

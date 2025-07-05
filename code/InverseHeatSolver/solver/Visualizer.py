@@ -147,98 +147,52 @@ def plot_1D(x, u_pred, x_obs=None, a_pred=None, u_obs=None, f_obs=None, a_exact=
     plt.tight_layout()
     plt.show()
 
-    # import matplotlib
-    # matplotlib.use('Agg')
-    # plt.savefig('direct_1D_fenics.eps', format='eps')
 
 
-def plot_3d(x, y, u_pred, f_pred, a_pred, is_time_plot=False):
-    fig = plt.figure(figsize=(12, 10))
-    gs = gridspec.GridSpec(2, 2, height_ratios=[1, 1])  # 2 rows, 2 cols
-
-    # Ensure all arrays have the same shape for plotting
+def plot_3d(x, y, u_pred, f_pred, a_pred=None, is_time_plot=False):
+    # Ensure all arrays have the correct shape
     if f_pred.ndim == 1:
         f_pred = f_pred.reshape(x.shape)
-    if a_pred.ndim == 1:
-        a_pred = a_pred.reshape(x.shape)
     if u_pred.shape != x.shape:
-        # If u_pred has a different shape, try to reshape it to match x and y
         try:
             u_pred = u_pred.reshape(x.shape)
         except ValueError:
-            # If reshaping fails, print a helpful error message
             print(f"Error: Cannot reshape u_pred with shape {u_pred.shape} to match x with shape {x.shape}")
-            print("Make sure the arrays have compatible dimensions.")
+            return
+    if a_pred is not None and a_pred.ndim == 1:
+        a_pred = a_pred.reshape(x.shape)
 
-    # Plot u(x, t) in [0, 0]
+    if a_pred is None:
+        fig = plt.figure(figsize=(12, 5))
+        gs = gridspec.GridSpec(1, 2)
+    else:
+        fig = plt.figure(figsize=(12, 10))
+        gs = gridspec.GridSpec(2, 2, height_ratios=[1, 1])
+
+    # Plot u(x,t) or u(x,y)
     ax1 = fig.add_subplot(gs[0, 0], projection='3d')
     ax1.plot_surface(x, y, u_pred, cmap='viridis')
     ax1.set_xlabel(r"$x$")
-    if is_time_plot:
-        ax1.set_title(r"$u(x,t)$")
-        ax1.set_ylabel(r"$t$")
-        # ax1.set_zlabel(r"$u(x,t)$")
-    else:
-        # ax1.set_title(r"$u(x,y)$")
-        ax1.set_title(r"$u(x,y, 0)$")
-        ax1.set_ylabel(r"$y$")
-        # ax1.set_zlabel(r"$u(x,t)$")
+    ax1.set_ylabel(r"$t$" if is_time_plot else r"$y$")
+    ax1.set_title(r"$u(x,t)$" if is_time_plot else r"$u(x,y,0)$")
 
-    # Plot f(x, t) in [0, 1]
+    # Plot f(x,t) or f(x,y)
     ax2 = fig.add_subplot(gs[0, 1], projection='3d')
     ax2.plot_surface(x, y, f_pred, cmap='plasma')
-    ax2.set_xlabel(r'$x$')
-    if is_time_plot:
-        ax2.set_title(r"$f(x,t)$")
-        ax2.set_ylabel(r'$t$')
-        # ax2.set_zlabel(r'$f(x,t)$')
-    else:
-        # ax2.set_title(r"$f(x,y)$")
-        ax2.set_title(r"$f(x,y, 0)$")
-        ax2.set_ylabel(r'$y$')
-        # ax2.set_zlabel(r'$f(x,y)$')
+    ax2.set_xlabel(r"$x$")
+    ax2.set_ylabel(r"$t$" if is_time_plot else r"$y$")
+    ax2.set_title(r"$f(x,t)$" if is_time_plot else r"$f(x,y,0)$")
 
-    # Plot a(x) as full width in [1, :]
-    ax3 = fig.add_subplot(gs[1, :], projection='3d')
-    ax3.plot_surface(x, y, a_pred, cmap='cividis')
-    ax3.set_xlabel(r'$x$')
-    if is_time_plot:
-        ax3.set_title(r"$a(x)$")
-        ax3.set_ylabel(r'$t$')
-        # ax3.set_zlabel(r'$a(x)$')
-    else:
-        ax3.set_title(r"$a(x,y)$")
-        ax3.set_ylabel(r'$y$')
-        # ax3.set_zlabel(r'$a(x,y)$')
+    # Plot a(x,y) if given
+    if a_pred is not None:
+        ax3 = fig.add_subplot(gs[1, :], projection='3d')
+        ax3.plot_surface(x, y, a_pred, cmap='cividis')
+        ax3.set_xlabel(r"$x$")
+        ax3.set_ylabel(r"$t$" if is_time_plot else r"$y$")
+        ax3.set_title(r"$a(x)$" if is_time_plot else r"$a(x,y)$")
 
     plt.tight_layout()
     plt.show()
-
-    # fig = plt.figure(figsize=(12, 5))
-    # gs = gridspec.GridSpec(1, 2)
-    # # Ensure arrays are compatible for plotting
-    # if f_pred.ndim == 1:
-    #     f_pred = f_pred.reshape(x.shape)
-    # if u_pred.shape != x.shape:
-    #     try:
-    #         u_pred = u_pred.reshape(x.shape)
-    #     except ValueError:
-    #         print(f"Error: Cannot reshape u_pred {u_pred.shape} to match x {x.shape}")
-    #         return
-    # # Plot u(x, t)
-    # ax1 = fig.add_subplot(gs[0, 0], projection='3d')
-    # ax1.plot_surface(x, y, u_pred, cmap='viridis')
-    # ax1.set_xlabel(r"$x$")
-    # ax1.set_title(r"$u(x,t)$" if is_time_plot else r"$u(x,y)$")
-    # ax1.set_ylabel(r"$t$" if is_time_plot else r"$y$")
-    # # Plot f(x, t)
-    # ax2 = fig.add_subplot(gs[0, 1], projection='3d')
-    # ax2.plot_surface(x, y, f_pred, cmap='plasma')
-    # ax2.set_xlabel(r"$x$")
-    # ax2.set_title(r"$f(x,t)$" if is_time_plot else r"$f(x,y)$")
-    # ax2.set_ylabel(r"$t$" if is_time_plot else r"$y$")
-    # plt.tight_layout()
-    # plt.show()
 
 
 def time_plot(X, range_t, sizeof_t, u_pred, f_pred=None, a_pred=None, u_exct=None, f_exct=None, a_exct=None):

@@ -1,22 +1,15 @@
 import numpy as np
 
-# --------------------------------------------------------------------------------------------------------------
-# local packages
 from solver.InverseHeatSolver import InverseHeatSolver
 from solver import Visualizer
 import functions # Defines all used functions
 
-# --------------------------------------------------------------------------------------------------------------
-
-#seed = 42  # Choose any integer seed
-#np.random.seed(seed)
-
 # ======================================================================================================================
 # Main script
 if __name__ == "__main__":
-    case_1 = True    # 1D, time independent
-    case_2 = False   # 1D, time dependent
-    case_3 = False   # 2D, time independent
+    case_1 = False    # 1D, time independent
+    case_2 = True    # 1D, time dependent
+    case_3 = False    # 2D, time independent
     case_4 = False    # 2D, time dependent
 
     # ==================================================================================================================

@@ -1,3 +1,10 @@
+# ======================================================================================================================
+# A small example to solve the forward heat equation in two dimensions and time independent using DeepXDE
+# ======================================================================================================================
+# Radmir Gesler, 2024, master thesis at BHT Berlin by Prof. Dr. Frank Haußer
+# ======================================================================================================================
+
+
 import deepxde as dde
 import numpy as np
 import tensorflow as tf

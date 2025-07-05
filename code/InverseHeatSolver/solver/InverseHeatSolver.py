@@ -20,6 +20,10 @@
 #     R(a) is a regularization term on a(x,y) (not implemented in this version)
 #     λ is the regularization weight.
 # ======================================================================================================================
+# A short plan how it works:
+#   1. From observed data for u and f the interpolation will return functions (Interpolator)
+#   2. Depending on the chosen solver (PdeMinimizer or PdeMinimizerDeepXde) the minimization of L will be solved.
+# ======================================================================================================================
 # Radmir Gesler, 2024, master thesis at BHT Berlin by Prof. Dr. Frank Haußer
 # ======================================================================================================================
 
@@ -34,48 +38,10 @@ from .Interpolator import Interpolator
 from .PdeMinimizer import PdeMinimizer
 from .PdeMinimizerDeepXde import PdeMinimizerDeepXde
 
-# ======================================================================================================================
-# ASSUMED STRUCTURE OF INITIALIZATION VARIABLES
-# ---------------|-------------------------------------|----------------------------------------------------------------
-#   VARS         |  VALUES                             |    EXPLANATION
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# domain         |   ['x_domain' : [x_start,           |    not None
-#                |                  x_end,             |
-#                |                  x_num_samp],       |
-#                |    'y_domain' : [ - " - ],          |    can be None
-#                |    't_domain' : [ - " -]]           |    can be None
-#                |                                     |----------------------------------------------------------------
-#                |                                     |    Is currently only for rectangular geometries implemented.
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# nn_dims        |   ['num_layers'  : nl,              |    hyperparameter
-#                |    'num_neurons' : nn]              |    hyperparameter
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# obs_values     |   ['dom_obs' : [x_1, ..., x_n]      |    not None
-#                |    'u_obs' : [u_1, ..., u_k],       |    not None
-#                |    'f_obs' : [f_1, ..., f_q]]       |    can be None
-# ---------------|-------------------------------------|----------------------------------------------------------------
-# loss_weights   |   ['w_PDE_loss'  : _,               |    not None
-#                |    'a_grad_loss'  : _ ]             |    can be None
-# ======================================================================================================================
-# INTERNAL VARIABLES STRUCTURE
-# ----------------------------------------------------------------------------------------------------------------------
-# u_model
-# f_model
-# a_model
-# total_iterations
-# training_time
-# two_dim
-# time_dependent
-# u_obs
-# f_obs
-# observed_domain
-# dimension
-# ======================================================================================================================
-
-
 class InverseHeatSolver:
     def __init__(self, domain, nn_dims, obs_values, loss_weights, learning_rate, use_deep_xde=False,
-                 load_prelearned_u_model=False, load_prelearned_a_model=False, load_prelearned_f_model=False):
+                 load_prelearned_u_model=False, load_prelearned_a_model=False, load_prelearned_f_model=False,
+                 same_arch_for_interpolation=False):
         self.is_f_model_saved = False
         self.is_u_model_saved = False
 
@@ -94,6 +60,7 @@ class InverseHeatSolver:
         self.two_dim = True if self.domain['y_domain'] is not None else False
         self.time_dependent = True if self.domain['t_domain'] is not None else False
 
+        self.same_arch_for_interpolation = same_arch_for_interpolation
         self.nn_dims = nn_dims
 
         self.u_obs = obs_values['u_obs']
@@ -209,15 +176,16 @@ class InverseHeatSolver:
         print('#####################################################')
         print('# Starts to learn u(.) from observed u-measurements #')
         print('#####################################################')
+        dims = self.nn_dims if self.same_arch_for_interpolation else None
         if self.load_prelearned_u_model:
-            self.u_model = Interpolator(self.dimension, lr=self.learning_rate)
+            self.u_model = Interpolator(self.dimension, dims, lr=self.learning_rate)
             self.u_model.restore(save_dir, "u_model.weights.h5")
             history, _, _ = self.restore_params(save_dir)
             self.history = history
             u_loss = self.history['u_history']['loss']
             u_steps = self.history['u_history']['steps']
         else:
-            self.u_model = Interpolator(self.dimension, lr=self.learning_rate)
+            self.u_model = Interpolator(self.dimension, dims, lr=self.learning_rate)
             u_loss, u_steps = self.u_model.fit(self.observed_domain, self.u_obs, iterations=u_iterations,
                                                print_every=display_results_every,
                                                best_loss=1e-2, reg_weight=1e-3)
@@ -230,13 +198,13 @@ class InverseHeatSolver:
             print('# Starts to learn f(.) from observed f-measurements #')
             print('#####################################################')
             if self.load_prelearned_f_model and os.path.isfile(os.path.join(save_dir, "f_model.weights.h5")):
-                    self.f_model = Interpolator(self.dimension, lr=self.learning_rate, positive_output=True)
+                    self.f_model = Interpolator(self.dimension, dims, lr=self.learning_rate, positive_output=True)
                     self.f_model.restore(save_dir, "f_model.weights.h5")
                     f_loss = self.history['f_history']['loss']
                     f_steps = self.history['f_history']['steps']
             else:
                 # Assumes that the source should always be a positive value
-                self.f_model = Interpolator(self.dimension, lr=self.learning_rate, positive_output=True)
+                self.f_model = Interpolator(self.dimension, dims, lr=self.learning_rate, positive_output=True)
                 f_loss, f_steps = self.f_model.fit(self.observed_domain, self.f_obs, iterations=f_iterations,
                                                    print_every=display_results_every,
                                                    best_loss=1e-2, reg_weight=1e-3)
@@ -297,6 +265,7 @@ class InverseHeatSolver:
         hyper_params = {
             'domain': self.domain,
             'nn_dims': self.nn_dims,
+            'same_arch_for_interpolation': self.same_arch_for_interpolation,
             'obs_values': obs_values,
             'loss_weights': self.loss_weights,
             'learning_rate': self.learning_rate,
@@ -306,9 +275,7 @@ class InverseHeatSolver:
             'use_deep_xde': self.use_deep_xde
         }
         with open(os.path.join(save_path, "hyperparameters.json"), 'w') as f:
-            #json.dump(self.convert_to_serializable(hyper_params), f, indent=4)
             json.dump(hyper_params, f, indent=4, default=lambda o: float(o))
-            #json.dump(hyper_params, f, indent=4)
 
     def convert_to_serializable(obj):
         if isinstance(obj, dict):
@@ -352,26 +319,25 @@ class InverseHeatSolver:
             obs_values=obs_values,
             loss_weights=params['loss_weights'],
             learning_rate=params['learning_rate'],
-            use_deep_xde=params['use_deep_xde']
+            use_deep_xde=params['use_deep_xde'],
+            same_arch_for_interpolation=params['same_arch_for_interpolation']
         )
         heat_solver.training_time = params['training_time']
         heat_solver.total_iterations = params['total_iterations']
         heat_solver.history = history
 
-        heat_solver.u_model = Interpolator(heat_solver.dimension, lr=heat_solver.learning_rate)
+        dims = heat_solver.nn_dims if heat_solver.same_arch_for_interpolation else None
+        heat_solver.u_model = Interpolator(heat_solver.dimension, dims, lr=heat_solver.learning_rate)
         heat_solver.u_model.restore(save_dir, "u_model.weights.h5")
-        #heat_solver.u_model.model.load_weights(os.path.join(save_dir, "u_model.weights.h5"))
 
         # Check if the file exists
         if os.path.isfile(os.path.join(save_dir, "f_model.weights.h5")):
-            heat_solver.f_model = Interpolator(heat_solver.dimension, lr=heat_solver.learning_rate, positive_output=True)
+            heat_solver.f_model = Interpolator(heat_solver.dimension, dims, lr=heat_solver.learning_rate, positive_output=True)
             heat_solver.f_model.restore(save_dir, "f_model.weights.h5")
-            #heat_solver.f_model.model.load_weights(os.path.join(save_dir, "f_model.weights.h5"))
         else:
             heat_solver.f_model = None
 
         InverseHeatSolver.load_a_model(heat_solver, save_dir)
-        #heat_solver.a_model.a_model.load_weights(os.path.join(save_dir, "a_model.weights.h5"))
 
         return heat_solver
 
@@ -422,7 +388,6 @@ class InverseHeatSolver:
 
     @staticmethod
     def print_l2_error(exact_values, pred_values, exact_name, pred_name):
-        # diff = (exact_values[:, 0] - pred_values)
         diff = np.abs(exact_values - pred_values)
         print(f"l2 error for '{exact_name}' to '{pred_name}' : {np.sqrt(np.sum(diff ** 2))/diff.shape[0]:.4e}")
 
