@@ -41,13 +41,6 @@ The goal is to infer the unknown thermal diffusivity $`a`$ from observed tempera
 
 ---
 
-### Goal:
-
-Estimate \( a(x) \) from temperature observations \( u(x, t) \) and known source term \( f(x, t) \), given suitable boundary and initial conditions.
-## InverseHeatSolver
-
----
-
 ## InverseHeatSolver Framework
 
 The `InverseHeatSolver` implements the PINN-based solution for this inverse problem by extending and customizing the **DeepXDE** framework. It allows for:
