@@ -1,28 +1,30 @@
-# Mastearbeit
+# Master Thesis: Inverse Heat Conduction with PINNs
 
-The current repository consists the practical and theoretical parts of my master thesis, which wears the name of:
+This repository contains the full implementation and theoretical background of my Master's thesis titled:
 
-**Physics Informed Neural Networks (PINN) zur Lösung eines inversen Problems der
-Wärmeleitungsgleichung** 
+**Physics-Informed Neural Networks (PINNs) zur Lösung eines inversen Problems der Wärmeleitungsgleichung**  
+or in English:  
+**Physics-Informed Neural Networks (PINNs) for Solving an Inverse Heat Conduction Problem**
 
-whts is nothing as
+---
 
-**Physics Informed Neural Networks (PINN) for solving an inverse heat conduction problem**.
+## Thesis Overview
 
-This thesis investigates the inverse problem of heat conduction for determining the spatially 
-dependent thermal conductivity. The theoretical foundation is provided by the partial differential 
-equation of heat conduction. The objective is to reconstruct the local thermal conductivity from 
-temperature measurements induced by a heat source. Since the determination of thermal conductivity 
-using classical numerical methods is highly challenging, a modern approach from machine learning is 
-pursued: Physics-Informed Neural Networks (PINNs). By incorporating physical laws into the training 
-of the PINNs, it is demonstrated that this approach yields acceptable results. The overall outcome 
-of this work is a software framework that can be easily applied to four variants of the problem. 
-Both stationary and time-dependent inverse heat conduction problems are considered, up to the second 
-spatial dimension.
+This thesis addresses the inverse problem of heat conduction, aiming to reconstruct the **spatially dependent thermal conductivity** from temperature measurements influenced by a known heat source.
 
-The main part of practical work is placed in the folder 
-[Master-Arbeit/code/InverseHeatSolver/](https://github.com/RadmirG/Master-Arbeit/tree/master/code/InverseHeatSolver). 
-If You like to see the evaluation of this work plese see the MA_RadmirGesler.pdf.
+While classical numerical approaches struggle with the ill-posedness of the inverse problem, this work adopts a **modern scientific machine learning method**—**Physics-Informed Neural Networks (PINNs)**—which integrate physical laws directly into the learning process via the loss function. This approach demonstrates robust and interpretable results.
+
+The main contribution is a modular and extensible **software framework** that supports four major variants of the problem:
+
+- **1D and 2D domains**
+- **Stationary and time-dependent** settings
+
+The solver is built upon the [DeepXDE](https://github.com/lululxvi/deepxde) library and extended to handle inverse PDE problems for thermal diffusivity.
+
+The implementation can be found in  
+[`code/InverseHeatSolver/`](https://github.com/RadmirG/Master-Arbeit/tree/master/code/InverseHeatSolver)
+
+For detailed evaluation and results, refer to the thesis document: `MA_RadmirGesler.pdf`.
 
 ---
 
@@ -39,8 +41,23 @@ The goal is to infer the unknown thermal diffusivity $`a`$ from observed tempera
 
 ---
 
+### Goal:
+
+Estimate \( a(x) \) from temperature observations \( u(x, t) \) and known source term \( f(x, t) \), given suitable boundary and initial conditions.
 ## InverseHeatSolver
 
+---
+
+## InverseHeatSolver Framework
+
+The `InverseHeatSolver` implements the PINN-based solution for this inverse problem by extending and customizing the **DeepXDE** framework. It allows for:
+
+- Modular configuration of PDE domains, boundary conditions, and data
+- Support for regularization (e.g., $`\|\nabla a(x)\|^2`$)
+- gPINNs (gradient-enhanced PINNs)
+- Robust training from noisy temperature observations
+
+---
 The [InverseHeatSolver](https://github.com/RadmirG/Master-Arbeit/tree/master/code/InverseHeatSolver/solver) 
 caprtures the problem defined above throth the extension of a scintific deep-learning software library **DeepXDE**.
 
